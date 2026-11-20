@@ -4,16 +4,27 @@ import { Globe, Trophy, Calendar, Sparkles, MapPin, Swords } from "lucide-react"
 
 interface NewsSectorProps {
   news: NewsArticle[];
+  upcomingFixtures?: NewsArticle[];
+  fixturesAttribution?: { text: string; url: string } | null;
   onPrepTactics: (teamA: string, teamB: string) => void;
   isLoading: boolean;
 }
 
-export default function NewsSector({ news, onPrepTactics, isLoading }: NewsSectorProps) {
+export default function NewsSector({
+  news,
+  upcomingFixtures,
+  fixturesAttribution,
+  onPrepTactics,
+  isLoading
+}: NewsSectorProps) {
   const [activeCategory, setActiveCategory] = useState<"all" | "news" | "results" | "upcoming">("all");
 
   const internationalNews = news.filter((item) => item.type === "international");
   const matchResults = news.filter((item) => item.type === "match_result");
-  const upcomingMatches = news.filter((item) => item.type === "upcoming");
+  // live fixtures replace the seeded ones whenever the API returned data
+  const upcomingMatches = upcomingFixtures && upcomingFixtures.length > 0
+    ? upcomingFixtures
+    : news.filter((item) => item.type === "upcoming");
 
   const filteredNews = () => {
     switch (activeCategory) {
@@ -226,6 +237,20 @@ export default function NewsSector({ news, onPrepTactics, isLoading }: NewsSecto
                 </div>
               ))}
             </div>
+
+            {fixturesAttribution && (
+              <p className="text-[11px] text-slate-500">
+                Fuente:{" "}
+                <a
+                  href={fixturesAttribution.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-amber-500/80 hover:underline"
+                >
+                  {fixturesAttribution.text}
+                </a>
+              </p>
+            )}
           </div>
         )}
 

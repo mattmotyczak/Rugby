@@ -74,6 +74,7 @@ export default function TacticsBoard({
   const [playersOnField, setPlayersOnField] = useState<OnFieldPlayer[]>([]);
   const [playersPool, setPlayersPool] = useState<RugbyPlayer[]>([]);
   const [selectedFieldPlayerId, setSelectedFieldPlayerId] = useState<string | null>(null);
+  const [positionFilter, setPositionFilter] = useState<string>("all");
   const [notes, setNotes] = useState("Ataca los canales de defensa en deriva en la línea de 10m. Que el talonador cubra los barridos por el lado corto.");
   const [savedBoards, setSavedBoards] = useState<TacticBoard[]>([]);
   
@@ -146,6 +147,21 @@ export default function TacticsBoard({
     loadData();
   }, [isLoggedIn, token]);
 
+  // Posiciones presentes en el pool (incluye jugadores propios) para el filtro del panel
+  const positionOptions: string[] = Array.from(new Set<string>(playersPool.map((p: RugbyPlayer) => p.position)))
+    .sort((a: string, b: string) => a.localeCompare(b, "es"));
+  const filteredPlayers = positionFilter === "all"
+    ? playersPool
+    : playersPool.filter((p) => p.position === positionFilter);
+
+  // Deriva la posición del hueco ("10. Apertura" -> "Apertura") al seleccionarlo en la cancha
+  const inferPosition = (roleName: string): string => {
+    const label = roleName.toLowerCase();
+    return positionOptions
+      .filter((position) => label.includes(position.toLowerCase()))
+      .sort((a, b) => b.length - a.length)[0] ?? "all";
+  };
+
   // Match a pool player to a role by position substring. Custom-first prefers the user's draft.
   const matchPlayerForRole = (role: string, preferCustom: boolean): RugbyPlayer | undefined => {
     const matches = playersPool.filter((p) =>
@@ -191,6 +207,8 @@ export default function TacticsBoard({
     e.preventDefault();
     setDraggedPlayerId(playerFieldId);
     setSelectedFieldPlayerId(playerFieldId);
+    const slot = playersOnField.find((p) => p.id === playerFieldId);
+    if (slot) setPositionFilter(inferPosition(slot.roleName));
     if (pitchRef.current) {
       pitchRef.current.setPointerCapture(e.pointerId);
     }
@@ -681,12 +699,34 @@ export default function TacticsBoard({
                     </div>
 
                     <div className="space-y-2">
-                      <label className="block text-[12px] font-bold uppercase tracking-wide text-slate-400">
+                      <label htmlFor="position-filter" className="block text-[12px] font-bold uppercase tracking-wide text-slate-400">
                         Elige un jugador para cubrir la posición:
                       </label>
+
+                      <div className="flex items-center gap-2">
+                        <select
+                          id="position-filter"
+                          value={positionFilter}
+                          onChange={(e) => setPositionFilter(e.target.value)}
+                          className="flex-1 px-2.5 py-2 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-none text-slate-100 outline-none text-xs cursor-pointer"
+                        >
+                          <option value="all">Todas las posiciones</option>
+                          {positionOptions.map((position) => (
+                            <option key={position} value={position}>{position}</option>
+                          ))}
+                        </select>
+                        <span className="text-[11px] font-mono text-slate-500 shrink-0">
+                          {filteredPlayers.length} jug.
+                        </span>
+                      </div>
                       
                       <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-2 border border-slate-950 bg-slate-950/50 p-1.5 rounded-none">
-                        {playersPool.map((poolPlayer) => (
+                        {filteredPlayers.length === 0 && (
+                          <p className="p-3 text-center text-xs text-slate-500">
+                            No hay jugadores para esta posición.
+                          </p>
+                        )}
+                        {filteredPlayers.map((poolPlayer) => (
                           <button
                             key={poolPlayer.id}
                             onClick={() => handleAssignPlayer(poolPlayer)}

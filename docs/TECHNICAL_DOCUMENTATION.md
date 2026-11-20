@@ -12,6 +12,7 @@ RugbyUnion está estructurado bajo una arquitectura de monorepo monolítico lige
 - **Backend:** Servidor **Node.js** con **Express 4** en TypeScript, sirviendo tanto las rutas REST `/api/*` como los middlewares de desarrollo de Vite (o estáticos en producción).
 - **IA / LLM:** Integración con **NVIDIA NIM** (modelo `nvidia/nemotron-3.5-bolt-e4b`) con capacidades de **Tool Calling** y **búsqueda web en vivo** (Google News RSS fallback) para el asistente técnico de rugby.
 - **Capa de Datos:** Persistencia documental en archivo JSON local (`db.json`) libre de dependencias externas.
+- **Partidos próximos:** **rugbyAPI** (key gratuita, 50 consultas/día) a través de `/api/matches/upcoming`, con caché en memoria de 30 minutos y fallback sin clave al JSON de `sporting-events.org`.
 
 ```mermaid
 flowchart TD
@@ -32,6 +33,7 @@ flowchart TD
             RForum["/api/forum (News / Posts / Comments / Votes)"]
             RTactics["/api/tactics (Players / Boards / Custom / Share)"]
             RChat["/api/chat (NVIDIA NIM ChatBot + WebSearch Tool)"]
+            RMatches["/api/matches (Próximos partidos)"]
         end
 
         DBAccess["db.ts (Caché Memoria + fs.writeFileSync)"]
@@ -42,6 +44,8 @@ flowchart TD
         DBFile[("db.json")]
         NvidiaAPI["NVIDIA NIM API"]
         WebSearchNews["Google News RSS (Búsqueda Rugby)"]
+        RugbyApi["rugbyAPI (fixtures)"]
+        FixturesFallback["sporting-events.org (JSON)"]
     end
 
     UI -->|HTTP / REST| Router
@@ -56,6 +60,8 @@ flowchart TD
     RTactics --> DBAccess
     RChat <--> NvidiaAPI
     RChat <--> WebSearchNews
+    RMatches <--> RugbyApi
+    RMatches <--> FixturesFallback
 
     DBAccess <--> DBFile
 ```
@@ -194,10 +200,23 @@ Envía el historial de mensajes al modelo LLM de NVIDIA NIM (`nvidia/nemotron-3.
 
 ---
 
+### 4.5. Próximos Partidos (`/api/matches`)
+
+#### `GET /api/matches/upcoming`
+Devuelve los próximos partidos de rugby en forma de `NewsArticle[]` (`type: "upcoming"`), listos para el panel «Próximos Partidos» del portal de noticias.
+
+- **Fuente principal:** `GET https://api.rugbyapi.com/v1/fixtures?days=14` con cabecera `Authorization: Bearer <RUGBYAPI_KEY>`. La key gratuita permite 50 consultas/día.
+- **Fallback:** si no hay key o falla la petición, se usa `https://sporting-events.org/data/rugby-union.json` (sin clave, requiere atribución; se devuelve en `attribution` / `attributionUrl`).
+- **Caché:** 30 minutos en memoria para no agotar el cupo diario; si una actualización falla y hay respuesta previa, se sirve esa respuesta (*stale-on-error*).
+- **Respuesta (200):** `{ matches: NewsArticle[], source: "rugbyapi" | "sporting-events", attribution?: string, attributionUrl?: string, fetchedAt: string }`
+- **Respuesta (502):** `{ error: string }` cuando ambas fuentes fallan.
+
+---
+
 ## 5. Estructura del Código Fuente
 
 ```
-├── .env.example              # Variables de entorno modelo (incluye NVIDIA_API_KEY y NVIDIA_MODEL)
+├── .env.example              # Variables de entorno modelo (NVIDIA_API_KEY, NVIDIA_MODEL, RUGBYAPI_KEY)
 ├── db.json                   # Base de datos JSON
 ├── server.ts                 # Punto de entrada HTTP y Vite integration
 ├── server/
@@ -208,6 +227,7 @@ Envía el historial de mensajes al modelo LLM de NVIDIA NIM (`nvidia/nemotron-3.
 │   │   ├── auth.ts           # Rutas de registro y sesión
 │   │   ├── chat.ts           # Integración NVIDIA NIM + Tool Calling web_search
 │   │   ├── forum.ts          # Rutas de foro y noticias
+│   │   ├── matches.ts        # Próximos partidos (rugbyAPI + fallback, caché 30 min)
 │   │   └── tactics.ts        # CRUD de jugadores, edición y pizarras tácticas
 │   └── utils/
 │       ├── crypto.ts         # HMAC, salting y token signing

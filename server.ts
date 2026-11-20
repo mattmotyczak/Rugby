@@ -6,6 +6,7 @@ import authRouter from "./server/routes/auth.js";
 import forumRouter from "./server/routes/forum.js";
 import tacticsRouter from "./server/routes/tactics.js";
 import chatRouter from "./server/routes/chat.js";
+import matchesRouter from "./server/routes/matches.js";
 
 async function startServer() {
   const app = express();
@@ -26,6 +27,7 @@ async function startServer() {
   app.use("/api/forum", forumRouter);
   app.use("/api/tactics", tacticsRouter);
   app.use("/api/chat", chatRouter);
+  app.use("/api/matches", matchesRouter);
 
   // Health check
   app.get("/api/health", (req, res) => {

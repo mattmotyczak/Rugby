@@ -40,6 +40,12 @@ export default function App() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loadingNews, setLoadingNews] = useState(false);
   const [loadingPosts, setLoadingPosts] = useState(false);
+  const [fixtures, setFixtures] = useState<{
+    matches: NewsArticle[];
+    source: string;
+    attribution?: string;
+    attributionUrl?: string;
+  } | null>(null);
 
   // Verify token & restore user profile
   const fetchUserProfile = async (savedToken: string) => {
@@ -83,6 +89,24 @@ export default function App() {
     }
   };
 
+  // Load live upcoming fixtures (rugbyAPI with fallback)
+  const loadUpcomingMatches = async () => {
+    try {
+      const res = await fetch("/api/matches/upcoming");
+      if (res.ok) {
+        const data = await res.json();
+        setFixtures({
+          matches: Array.isArray(data.matches) ? data.matches : [],
+          source: data.source,
+          attribution: data.attribution,
+          attributionUrl: data.attributionUrl,
+        });
+      }
+    } catch (err) {
+      console.error("Failed to load upcoming matches:", err);
+    }
+  };
+
   // Load supporters forum posts
   const loadPostsData = async () => {
     setLoadingPosts(true);
@@ -102,6 +126,7 @@ export default function App() {
   useEffect(() => {
     loadNewsData();
     loadPostsData();
+    loadUpcomingMatches();
   }, []);
 
   const handleAuthSuccess = (newToken: string, user: User) => {
@@ -312,6 +337,12 @@ export default function App() {
         {activeTab === "news" && (
           <NewsSector
             news={news}
+            upcomingFixtures={fixtures?.matches}
+            fixturesAttribution={
+              fixtures?.attribution && fixtures.attributionUrl
+                ? { text: fixtures.attribution, url: fixtures.attributionUrl }
+                : null
+            }
             onPrepTactics={handlePrepTactics}
             isLoading={loadingNews}
           />

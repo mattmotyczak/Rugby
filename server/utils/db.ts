@@ -11,6 +11,13 @@ export interface User {
   createdAt: string;
 }
 
+export interface BoardSnapshot {
+  name: string;
+  formation: "15-union" | "7-sevens" | "custom";
+  playersOnField: TacticBoard["playersOnField"];
+  notes?: string;
+}
+
 export interface Post {
   id: string;
   author: string;
@@ -23,6 +30,7 @@ export interface Post {
   votedUserIds?: string[]; // track who voted
   comments: Comment[];
   createdAt: string;
+  boardSnapshot?: BoardSnapshot;
 }
 
 export interface Comment {

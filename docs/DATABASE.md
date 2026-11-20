@@ -10,8 +10,8 @@ El almacenamiento de OnRugby está implementado como una base de datos documenta
 
 ### Características Principales:
 - **Almacenamiento Local en Archivo:** Los datos residen en `db.json` en la raíz del proyecto.
-- **Caché en Memoria:** Mantiene una referencia en memoria (`dbCache`) para agilizar lecturas subsecuentes.
-- **Escritura Síncrona:** Las mutaciones guardan el estado completo en memoria e inmediatamente escriben en disco (`fs.writeFileSync`).
+- **Caché en Memoria:** Mantiene una referencia en memoria (`dbCache`) para agilizar lecturas subsecuentes sin sobrecargar el disco.
+- **Escritura Síncrona:** Las mutaciones (creación, edición y borrado) actualizan el estado en memoria e inmediatamente escriben en disco (`fs.writeFileSync`).
 - **Autoinicialización:** Si `db.json` no existe al iniciar la aplicación, el sistema crea automáticamente el archivo con la estructura por defecto (`DEFAULT_DB`), incluyendo noticias precargadas, jugadores de clase mundial y debates del foro iniciales.
 
 ---
@@ -34,8 +34,8 @@ interface DatabaseSchema {
 erDiagram
     User ||--o{ Post : "publica"
     User ||--o{ Comment : "escribe"
-    User ||--o{ TacticBoard : "diseña"
-    User ||--o{ RugbyPlayer : "crea (custom)"
+    User ||--o{ TacticBoard : "diseña / edita"
+    User ||--o{ RugbyPlayer : "crea / edita (isCustom=true)"
     Post ||--o{ Comment : "contiene"
     TacticBoard ||--|{ PlayerOnField : "ubica"
 
@@ -178,19 +178,19 @@ Catálogo de jugadores estándar de clase mundial y jugadores personalizados cre
 |---|---|---|---|
 | `id` | `string` | Sí | ID (`p1..p18` para predefinidos, `player-custom-...` para propios). |
 | `name` | `string` | Sí | Nombre completo del jugador. |
-| `position` | `string` | Sí | Posición principal (e.g., "Apertura", "Medio melé", "Pilar"). |
-| `rating` | `number` | Sí | Valoración numérica de 1 a 99. |
-| `club` | `string` | Sí | Club o equipo del jugador. |
-| `country` | `string` | Sí | Selección o país de origen. |
-| `isCustom` | `boolean` | Sí | `false` si es predeterminado, `true` si es creado por usuario. |
-| `userId` | `string` | Opcional | ID del creador cuando `isCustom === true`. |
+| `position` | `string` | Sí | Posición principal reglamentaria (Pilar, Talonador, Segunda línea, Flanker, Número 8, Medio melé, Apertura, Centro, Extremo, Zaguero). |
+| `rating` | `number` | Sí | Valoración numérica de 1 a 99 (OVR). |
+| `club` | `string` | Sí | Club o equipo del jugador (por defecto "Sin club"). |
+| `country` | `string` | Sí | Selección o país de origen (por defecto "Selección"). |
+| `isCustom` | `boolean` | Sí | `false` si es predeterminado global, `true` si es creado por un usuario. |
+| `userId` | `string` | Opcional | ID del creador cuando `isCustom === true` (garantiza aislamiento y permisos de edición). |
 
 ### 3.5. Tableros Tácticos (`tactics: TacticBoard[]`)
 Pizarras y formaciones tácticas creadas y guardadas por los usuarios.
 
 | Campo | Tipo | Requerido | Descripción |
 |---|---|---|---|
-| `id` | `string` | Sí | Identificador único (`tactic-{timestamp}-{random}`). |
+| `id` | `string` | Sí | Identificador único (`board-{timestamp}-{random}`). |
 | `name` | `string` | Sí | Nombre asignado a la pizarra táctica. |
 | `formation` | `"15-union" \| "7-sevens" \| "custom"` | Sí | Modalidad de rugby. |
 | `playersOnField` | `Array<PlayerOnField>` | Sí | Jugadores posicionados en la cancha (coordenadas relativas). |
@@ -216,15 +216,15 @@ El archivo [`server/utils/db.ts`](../server/utils/db.ts) provee dos métodos cen
 1. `getDB(): DatabaseSchema`:
    - Lee desde memoria si existe `dbCache`.
    - Si no existe el archivo, crea el directorio y el archivo `db.json` con los valores por defecto.
-   - Si el archivo existe, lo lee y parsea, garantizando la existencia de todos los arreglos fundamentales.
+   - Si el archivo existe, lo lee y parsea, garantizando la existencia de todos los arreglos fundamentales (`users`, `posts`, `news`, `players`, `tactics`).
 2. `saveDB(data: DatabaseSchema): void`:
    - Actualiza la variable en memoria `dbCache`.
    - Serializa y escribe en disco con formato legible (`JSON.stringify(data, null, 2)`).
 
 ---
 
-## 5. Consideraciones Técnicas y Trade-offs
+## 5. Ciclo de Vida y Permisos sobre Datos
 
-- **Ventajas:** Cero dependencias externas de bases de datos o servicios pagos (MySQL, PostgreSQL, MongoDB, etc.), ideal para desarrollo local inmediato y demostraciones académicas autónomas.
-- **Concurrencia:** Al ser un único archivo con `fs.writeFileSync`, no soporta bloqueos transaccionales multi-proceso. Está dimensionado para un único nodo Node.js / Express en entornos locales y demos.
-- **Seguridad:** Los passwords nunca se almacenan en texto plano; se utiliza hash HMAC-SHA256 con salt dinámico por usuario.
+- **Aislamiento de Jugadores Personalizados:** Las consultas a `/api/tactics/players` filtran por `userId`, de modo que cada usuario solo ve sus propios jugadores sumados a los globales.
+- **Edición Segura (`PUT /api/tactics/players/:id`):** Valida que el jugador a modificar sea propiedad del usuario logueado (`player.userId === user.id && player.isCustom`).
+- **Seguridad en Tableros (`POST /api/tactics/boards` con `id`):** Al actualizar un tablero existente, se valida que `board.userId === user.id`; de lo contrario, se rechaza con error 403.

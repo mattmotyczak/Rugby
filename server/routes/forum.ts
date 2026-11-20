@@ -35,7 +35,7 @@ router.get("/posts", (req: Request, res: Response) => {
  * Create a new forum post or tactical analysis (requires authentication)
  */
 router.post("/posts", requireAuth, (req: Request, res: Response) => {
-  const { title, content, type, category } = req.body;
+  const { title, content, type, category, boardSnapshot } = req.body;
   const user = (req as any).user;
 
   if (!title || !content || !type || !category) {
@@ -46,6 +46,40 @@ router.post("/posts", requireAuth, (req: Request, res: Response) => {
   if (type !== "general" && type !== "analysis") {
     res.status(400).json({ error: "El tipo debe ser 'general' o 'analysis'." });
     return;
+  }
+
+  let snapshot;
+  if (boardSnapshot != null) {
+    const s = boardSnapshot;
+    if (
+      typeof s.name !== "string" || !s.name.trim() || s.name.length > 200 ||
+      (s.formation !== "15-union" && s.formation !== "7-sevens" && s.formation !== "custom") ||
+      !Array.isArray(s.playersOnField) || s.playersOnField.length > 30 ||
+      s.playersOnField.some((p: any) =>
+        !p || typeof p.name !== "string" || p.name.length > 100 ||
+        typeof p.position !== "string" || p.position.length > 100 ||
+        typeof p.roleName !== "string" || p.roleName.length > 100 ||
+        typeof p.x !== "number" || !Number.isFinite(p.x) || p.x < 0 || p.x > 100 ||
+        typeof p.y !== "number" || !Number.isFinite(p.y) || p.y < 0 || p.y > 100
+      ) ||
+      (s.notes != null && (typeof s.notes !== "string" || s.notes.length > 1000))
+    ) {
+      res.status(400).json({ error: "La pizarra adjunta no es válida." });
+      return;
+    }
+    snapshot = {
+      name: s.name.trim(),
+      formation: s.formation,
+      playersOnField: s.playersOnField.map((p: any) => ({
+        id: String(p.id ?? "").slice(0, 100),
+        name: p.name.trim(),
+        position: p.position.trim(),
+        roleName: p.roleName.trim(),
+        x: p.x,
+        y: p.y,
+      })),
+      notes: typeof s.notes === "string" ? s.notes.trim() : undefined,
+    };
   }
 
   const db = getDB();
@@ -61,6 +95,7 @@ router.post("/posts", requireAuth, (req: Request, res: Response) => {
     votedUserIds: [],
     comments: [],
     createdAt: new Date().toISOString(),
+    ...(snapshot ? { boardSnapshot: snapshot } : {}),
   };
 
   db.posts.push(newPost);

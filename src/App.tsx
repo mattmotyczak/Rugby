@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { NewsArticle, Post, User } from "./types.js";
+import { BoardSnapshot, NewsArticle, Post, User } from "./types.js";
 import Navbar from "./components/Navbar.js";
 import AuthModal from "./components/AuthModal.js";
 import NewsSector from "./components/NewsSector.js";
@@ -33,6 +33,7 @@ export default function App() {
     history.replaceState(null, "", `#${activeTab}`);
   }, [activeTab]);
   const [preloadedTeams, setPreloadedTeams] = useState<{ teamA: string; teamB: string } | null>(null);
+  const [preloadedBoard, setPreloadedBoard] = useState<BoardSnapshot | null>(null);
 
   // Data states
   const [news, setNews] = useState<NewsArticle[]>([]);
@@ -121,6 +122,12 @@ export default function App() {
     setActiveTab("tactics");
   };
 
+  // Open a forum post's board snapshot in the tactics tab (read-only until the user saves it themselves)
+  const handleOpenBoard = (snapshot: BoardSnapshot) => {
+    setPreloadedBoard(snapshot);
+    setActiveTab("tactics");
+  };
+
   // Upvote forum post API handler
   const handleVotePost = async (postId: string) => {
     if (!token) return;
@@ -165,6 +172,7 @@ export default function App() {
     content: string;
     type: "general" | "analysis";
     category: "news" | "tactics" | "transfers" | "general";
+    boardSnapshot?: BoardSnapshot;
   }) => {
     if (!token) return;
     try {
@@ -201,6 +209,7 @@ export default function App() {
           setActiveTab(tab);
           if (tab !== "tactics") {
             setPreloadedTeams(null); // Clear preloaded team if navigating away from tactics
+            setPreloadedBoard(null);
           }
         }}
         onOpenAuth={() => setIsAuthOpen(true)}
@@ -316,6 +325,8 @@ export default function App() {
             token={token}
             currentUser={currentUser}
             preloadedTeams={preloadedTeams}
+            preloadedBoard={preloadedBoard}
+            onBoardConsumed={() => setPreloadedBoard(null)}
           />
         )}
 
@@ -325,9 +336,11 @@ export default function App() {
             posts={posts}
             isLoggedIn={!!currentUser}
             currentUser={currentUser}
+            token={token}
             onVote={handleVotePost}
             onComment={handleCommentPost}
             onAddPost={handleAddPost}
+            onOpenBoard={handleOpenBoard}
             onOpenAuth={() => setIsAuthOpen(true)}
           />
         )}

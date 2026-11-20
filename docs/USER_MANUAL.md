@@ -12,7 +12,7 @@ Aunque puedes consultar noticias, resultados y publicaciones públicas sin inici
 - Crear publicaciones y análisis técnicos en el foro.
 - Votar publicaciones y comentar debates.
 - Diseñar y guardar tus propias pizarras y formaciones tácticas.
-- Crear jugadores personalizados para armar tu equipo soñado.
+- **Crear y editar jugadores personalizados** para armar tu equipo soñado.
 
 ### Cómo Crear una Cuenta:
 1. En la esquina superior derecha de la pantalla, haz clic en **"Iniciar Sesión"**.
@@ -58,18 +58,28 @@ En la barra superior de controles tácticos puedes alternar entre:
 
 ---
 
-## 4. Creador de Equipo y Jugadores (Squad Draft)
+## 4. Gestión y Creación de Jugadores (Squad Draft)
 
-¿Quieres crear tu club local o inventar un jugador estrella? La sección **Squad Draft** te da control total:
+La sección **Squad Draft** te permite construir y administrar tu plantilla privada con herramientas avanzadas:
 
-1. Ingresa a la pestaña **"Squad Draft"**.
-2. Rellena los datos de tu nuevo jugador:
+### 4.1. Crear un Jugador Nuevo
+1. Ingresa a la pestaña **"Squad Draft"** con tu sesión iniciada.
+2. Rellena los datos en la ficha técnica:
    - **Nombre completo** (ej: *"Juan Pérez"*).
-   - **Posición** (Apertura, Medio melé, Pilar, Flanker, etc.).
-   - **Valoración General (Rating):** Número del 1 al 99 que califica su rendimiento general.
-   - **Club y País:** Nombre de su equipo y nacionalidad.
-3. Haz clic en **"Guardar Jugador"**.
-4. El jugador quedará disponible inmediatamente para ser utilizado en el **Tablero Táctico**.
+   - **Posición:** Selecciona una de las 10 posiciones reglamentarias (Pilar, Talonador, Segunda línea, Flanker, Número 8, Medio melé, Apertura, Centro, Extremo o Zaguero).
+   - **Valoración General (Rating/OVR):** Número del 1 al 99 que califica su rendimiento general.
+   - **Club:** Nombre de su equipo actual.
+   - **País / Selección:** Selecciónalo del listado internacional localizado o escribe el país correspondiente.
+3. Haz clic en **"Guardar en Mi Plantilla"**.
+
+### 4.2. Mapa Visual de Posición
+A la derecha del formulario encontrarás un **mapa de media cancha de rugby interactivo**:
+- Al elegir una posición en el formulario (o pasar el cursor sobre un jugador de tu plantilla), se resaltarán en color ámbar las posiciones exactas y dorsales donde se desempeña dicho rol (por ejemplo, el dorsal `10` para Apertura, `1` y `3` para Pilares, o `11` y `14` para Extremos).
+
+### 4.3. Editar Jugadores Existentes
+1. En el panel de **"Mi Plantilla"**, haz clic sobre el nombre del jugador que desees modificar.
+2. El formulario cambiará al modo **Edición**, cargando todos sus datos y mostrando una barra indicadora con el botón para cancelar.
+3. Actualiza los campos que necesites y haz clic en **"Guardar Cambios"**.
 
 ---
 
@@ -93,12 +103,13 @@ Un espacio abierto para el análisis y la discusión del rugby global.
 
 ---
 
-## 6. Asistente IA de Rugby (ChatBot)
+## 6. Asistente IA de Rugby en Vivo (ChatBot)
 
-En la esquina inferior derecha verás el botón flotante del **Asistente de OnRugby**:
+En la esquina inferior derecha dispones del **Asistente Oficial de OnRugby**, impulsado por los modelos de IA de NVIDIA NIM:
 
-- **¿Qué puedes preguntarle?**
-  - Reglas complejas del rugby (ejemplo: *"¿Cuándo se sanciona 50:22?"* o *"¿Cómo funciona el ruck?"*).
-  - Diferencias tácticas (ejemplo: *"¿Qué ventaja ofrece una formación de banco 7-1 frente a un 5-3?"*).
-  - Cómo aprovechar mejor el tablero táctico y las herramientas de la aplicación.
-- **Límites de Uso:** El asistente cuenta con protección de consultas para mantener la fluidez del servicio (hasta 12 preguntas por minuto).
+- **¿Qué puedes consultarle?**
+  - **Reglas y Tácticas:** Explicaciones claras sobre leyes del juego (*¿Cuándo aplica un 50:22?*, *¿Cómo defender el maul?*, o *¿Cómo funciona un banco 7-1 vs 5-3?*).
+  - **Actualidad en Vivo (Búsqueda Web):** Gracias a su capacidad de búsqueda en tiempo real, puedes preguntarle sobre noticias del día, resultados de partidos recientes, calendarios o convocatorias de selecciones.
+  - **Uso de la Aplicación:** Guía rápida sobre cómo posicionar jugadores en el tablero o gestionar tu plantilla.
+- **Estilo de Respuesta:** Respuestas directas, en español y de máximo tres oraciones para una consulta ágil.
+- **Protección y Límites:** El asistente cuenta con un límite de 12 preguntas por minuto para asegurar estabilidad y disponibilidad.

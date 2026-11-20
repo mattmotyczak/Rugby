@@ -10,7 +10,7 @@ OnRugby está estructurado bajo una arquitectura de monorepo monolítico ligero 
 
 - **Frontend:** Single Page Application (SPA) construida con **React 19**, **TypeScript** y **Tailwind CSS v4**, empaquetada con **Vite**.
 - **Backend:** Servidor **Node.js** con **Express 4** en TypeScript, sirviendo tanto las rutas REST `/api/*` como los middlewares de desarrollo de Vite (o estáticos en producción).
-- **IA / LLM:** Integración con **NVIDIA NIM** (modelo `nvidia/nemotron-3.5-bolt-e4b`) para el asistente técnico de rugby y análisis táctico.
+- **IA / LLM:** Integración con **NVIDIA NIM** (modelo `nvidia/nemotron-3.5-bolt-e4b`) con capacidades de **Tool Calling** y **búsqueda web en vivo** (Google News RSS fallback) para el asistente técnico de rugby.
 - **Capa de Datos:** Persistencia documental en archivo JSON local (`db.json`) libre de dependencias externas.
 
 ```mermaid
@@ -30,8 +30,8 @@ flowchart TD
         subgraph Rutas ["Controladores de Rutas"]
             RAuth["/api/auth (Login / Register / Me)"]
             RForum["/api/forum (News / Posts / Comments / Votes)"]
-            RTactics["/api/tactics (Players / Boards / Custom)"]
-            RChat["/api/chat (NVIDIA NIM ChatBot)"]
+            RTactics["/api/tactics (Players / Boards / Custom / Share)"]
+            RChat["/api/chat (NVIDIA NIM ChatBot + WebSearch Tool)"]
         end
 
         DBAccess["db.ts (Caché Memoria + fs.writeFileSync)"]
@@ -41,6 +41,7 @@ flowchart TD
     subgraph Externo ["Servicios Externos / Disco"]
         DBFile[("db.json")]
         NvidiaAPI["NVIDIA NIM API"]
+        WebSearchNews["Google News RSS (Búsqueda Rugby)"]
     end
 
     UI -->|HTTP / REST| Router
@@ -53,7 +54,8 @@ flowchart TD
     RAuth --> DBAccess
     RForum --> DBAccess
     RTactics --> DBAccess
-    RChat --> NvidiaAPI
+    RChat <--> NvidiaAPI
+    RChat <--> WebSearchNews
 
     DBAccess <--> DBFile
 ```
@@ -73,7 +75,7 @@ flowchart TD
 | Estilos | Tailwind CSS | ^4.1.14 | Motor de utilidades CSS moderno |
 | Iconografía | Lucide React | ^0.546.0 | Conjunto de iconos vectoriales |
 | Animaciones | Motion | ^12.23.24 | Animaciones fluidas de UI |
-| Asistente IA | NVIDIA NIM | API REST | Respuestas tácticas y de reglas |
+| Asistente IA | NVIDIA NIM | API REST | Respuestas tácticas, reglas y Tool Calling |
 
 ---
 
@@ -146,7 +148,7 @@ Añade un comentario a un hilo existente.
 
 ---
 
-### 4.3. Pizarra Táctica y Jugadores (`/api/tactics`)
+### 4.3. Pizarra Táctica y Gestión de Jugadores (`/api/tactics`)
 
 #### `GET /api/tactics/players` *(Auth Opcional)*
 Lista de jugadores. Si la petición incluye token, concatena los jugadores estándar con los creados por ese usuario.
@@ -158,30 +160,35 @@ Crea un jugador personalizado para el usuario logueado.
 - **Respuesta (201):** `{ message: string, player: RugbyPlayer }`
 
 #### `PUT /api/tactics/players/:id` *(Requiere Auth)*
-Modifica los datos de un jugador propio.
+Modifica los datos de un jugador propio existente (nombre, posición, valoración, club, país/selección).
+- **Body:** `{ "name": string, "position": string, "rating": number, "club": string, "country": string }`
+- **Respuesta (200):** `{ message: string, player: RugbyPlayer }`
 
-#### `DELETE /api/tactics/players/:id` *(Requiere Auth)*
-Elimina un jugador personalizado propio.
-
-#### `GET /api/tactics/boards` *(Auth Opcional)*
-Lista los tableros tácticos guardados (públicos y del usuario).
+#### `GET /api/tactics/boards` *(Requiere Auth)*
+Lista los tableros tácticos guardados del usuario logueado.
 - **Respuesta (200):** `{ boards: TacticBoard[] }`
 
 #### `POST /api/tactics/boards` *(Requiere Auth)*
-Guarda una nueva pizarra táctica.
-- **Body:** `{ "name": string, "formation": "15-union" | "7-sevens" | "custom", "playersOnField": Array<PlayerOnField>, "notes"?: string }`
-- **Respuesta (201):** `{ message: string, board: TacticBoard }`
+Guarda o actualiza una pizarra táctica.
+- **Body:** `{ "id"?: string, "name": string, "formation": "15-union" | "7-sevens" | "custom", "playersOnField": Array<PlayerOnField>, "notes"?: string }`
+- **Respuesta (200 / 201):** `{ message: string, board: TacticBoard }`
 
-#### `DELETE /api/tactics/boards/:id` *(Requiere Auth)*
-Elimina un tablero táctico propio.
+#### `POST /api/tactics/share` *(Requiere Auth)*
+Genera un enlace y registro simulado de exportación del tablero a plataformas externas (Twitter, WhatsApp, etc.).
+- **Body:** `{ "boardId": string, "platform": string }`
+- **Respuesta (200):** `{ message: string, shareUrl: string, platform: string, user: string, timestamp: string }`
 
 ---
 
-### 4.4. Asistente IA (`/api/chat`)
+### 4.4. Asistente IA con Búsqueda Web (`/api/chat`)
 
 #### `POST /api/chat`
-Envía el historial de mensajes al modelo LLM de NVIDIA NIM con prompt de sistema especializado en rugby.
+Envía el historial de mensajes al modelo LLM de NVIDIA NIM (`nvidia/nemotron-3.5-bolt-e4b`) con soporte de **Tool Calling** (`web_search`).
 - **Body:** `{ "messages": [ { "role": "user" | "assistant", "content": string } ] }`
+- **Lógica de Ejecución:**
+  1. El servidor evalúa la pregunta del usuario con el system prompt especializado.
+  2. Si la consulta involucra datos en tiempo real (noticias, partidos, lesiones, resultados), el LLM emite una llamada a la función `web_search(query)`.
+  3. El backend ejecuta la búsqueda mediante Google News RSS, retorna los titulares y fuentes al LLM en una segunda ronda de inferencia, y genera una respuesta informada en español de máximo 3 frases.
 - **Rate Limit:** 12 req / minuto.
 - **Respuesta (200):** `{ reply: string }`
 
@@ -190,7 +197,7 @@ Envía el historial de mensajes al modelo LLM de NVIDIA NIM con prompt de sistem
 ## 5. Estructura del Código Fuente
 
 ```
-├── .env.example              # Variables de entorno modelo
+├── .env.example              # Variables de entorno modelo (incluye NVIDIA_API_KEY y NVIDIA_MODEL)
 ├── db.json                   # Base de datos JSON
 ├── server.ts                 # Punto de entrada HTTP y Vite integration
 ├── server/
@@ -199,20 +206,20 @@ Envía el historial de mensajes al modelo LLM de NVIDIA NIM con prompt de sistem
 │   │   └── rateLimiter.ts    # Rate limiter en memoria por IP
 │   ├── routes/
 │   │   ├── auth.ts           # Rutas de registro y sesión
-│   │   ├── chat.ts           # Integración NVIDIA NIM
+│   │   ├── chat.ts           # Integración NVIDIA NIM + Tool Calling web_search
 │   │   ├── forum.ts          # Rutas de foro y noticias
-│   │   └── tactics.ts        # Rutas de jugadores y pizarras tácticas
+│   │   └── tactics.ts        # CRUD de jugadores, edición y pizarras tácticas
 │   └── utils/
 │       ├── crypto.ts         # HMAC, salting y token signing
 │       └── db.ts             # Acceso y serialización a db.json
 ├── src/
-│   ├── App.tsx               # Contenedor principal y tabs
+│   ├── App.tsx               # Contenedor principal, pestañas e integración de ChatBot
 │   ├── main.tsx              # Bootstrap React en el DOM
 │   ├── types.ts              # Tipos compartidos en el frontend
 │   └── components/
 │       ├── AuthModal.tsx     # Diálogo de inicio de sesión / registro
-│       ├── ChatBot.tsx       # Widget flotante del asistente IA
-│       ├── CustomTeamCreator.tsx # Creador de escuadra y jugadores
+│       ├── ChatBot.tsx       # Widget flotante interactivo del asistente IA
+│       ├── CustomTeamCreator.tsx # Formulario de creación/edición, selector de países y mapa 2D
 │       ├── ForumSector.tsx   # Vista de publicaciones, votos y comentarios
 │       ├── Navbar.tsx        # Navegación y estado de autenticación
 │       ├── NewsSector.tsx    # Portal de noticias y resultados

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { RugbyPlayer, OnFieldPlayer, TacticBoard } from "../types.js";
+import { BoardSnapshot, RugbyPlayer, OnFieldPlayer, TacticBoard } from "../types.js";
 import { 
   Save, 
   Share2, 
@@ -14,7 +14,9 @@ import {
   Check, 
   Download,
   ChevronRight,
-  UserCheck
+  UserCheck,
+  Loader2,
+  X
 } from "lucide-react";
 
 interface TacticsBoardProps {
@@ -23,6 +25,8 @@ interface TacticsBoardProps {
   token: string | null;
   currentUser: { id: string; username: string } | null;
   preloadedTeams?: { teamA: string; teamB: string } | null;
+  preloadedBoard?: BoardSnapshot | null;
+  onBoardConsumed?: () => void;
 }
 
 // `role` is the machine key: it is matched against RugbyPlayer.position and
@@ -61,7 +65,9 @@ export default function TacticsBoard({
   onOpenAuth,
   token,
   currentUser,
-  preloadedTeams
+  preloadedTeams,
+  preloadedBoard,
+  onBoardConsumed
 }: TacticsBoardProps) {
   const [formationType, setFormationType] = useState<"15-union" | "7-sevens">("15-union");
   const [boardName, setBoardName] = useState("Esquema Defensivo de Campeonato");
@@ -78,6 +84,8 @@ export default function TacticsBoard({
   const [draggedPlayerId, setDraggedPlayerId] = useState<string | null>(null);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportedData, setExportedData] = useState<any | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [aiFeedback, setAiFeedback] = useState<string | null>(null);
 
   const pitchRef = useRef<HTMLDivElement>(null);
 
@@ -88,6 +96,19 @@ export default function TacticsBoard({
       setNotes(`Notas de preparación para el partido entre ${preloadedTeams.teamA} y ${preloadedTeams.teamB}. Arrastra a los jugadores para trazar melés y touches.`);
     }
   }, [preloadedTeams]);
+
+  // Hydrate from a forum post's board snapshot, then let the parent clear it.
+  useEffect(() => {
+    if (!preloadedBoard) return;
+    setBoardName(preloadedBoard.name);
+    setFormationType(preloadedBoard.formation as "15-union" | "7-sevens");
+    setPlayersOnField(preloadedBoard.playersOnField);
+    setNotes(preloadedBoard.notes || "");
+    setAiFeedback(null);
+    setSelectedFieldPlayerId(null);
+    setSuccessMsg(`Pizarra "${preloadedBoard.name}" cargada para revisión.`);
+    onBoardConsumed?.();
+  }, [preloadedBoard]);
 
   // Load players pool & saved tactical boards
   const loadData = async () => {
@@ -125,15 +146,24 @@ export default function TacticsBoard({
     loadData();
   }, [isLoggedIn, token]);
 
+  // Match a pool player to a role by position substring. Custom-first prefers the user's draft.
+  const matchPlayerForRole = (role: string, preferCustom: boolean): RugbyPlayer | undefined => {
+    const matches = playersPool.filter((p) =>
+      p.position.toLowerCase().includes(role.split(" ")[0].toLowerCase()) ||
+      p.position.toLowerCase().includes(role.toLowerCase())
+    );
+    if (!preferCustom) return matches[0];
+    const customMatches = matches.filter((p) => p.isCustom);
+    return customMatches.length
+      ? customMatches.reduce((best, p) => (p.rating > best.rating ? p : best))
+      : undefined;
+  };
+
   // Reset formation preset
   const resetFormation = (type: "15-union" | "7-sevens") => {
     const roles = type === "15-union" ? RUGBY_UNION_ROLES : RUGBY_SEVENS_ROLES;
     const initialFieldPlayers: OnFieldPlayer[] = roles.map((roleInfo, index) => {
-      // Match with an appropriate player from pool based on position index
-      const matchedPlayer = playersPool.find((p) => 
-        p.position.toLowerCase().includes(roleInfo.role.split(" ")[0].toLowerCase()) ||
-        p.position.toLowerCase().includes(roleInfo.role.toLowerCase())
-      );
+      const matchedPlayer = matchPlayerForRole(roleInfo.role, false);
 
       return {
         id: `field-${index}-${Date.now()}`,
@@ -260,6 +290,56 @@ export default function TacticsBoard({
     setNotes(saved.notes || "");
     setSuccessMsg(`¡Esquema "${saved.name}" cargado!`);
     setSelectedFieldPlayerId(null);
+  };
+
+  // Place the user's draft players into matching slots, leaving the rest (and manual drags) untouched
+  const handleLoadCustomTemplate = () => {
+    if (!isLoggedIn) {
+      onOpenAuth();
+      return;
+    }
+    if (!playersPool.some((p) => p.isCustom)) {
+      setSuccessMsg("Aún no tienes jugadores propios. Crea tu plantilla en la pestaña Plantilla.");
+      return;
+    }
+
+    let placed = 0;
+    const next = playersOnField.map((slot) => {
+      const match = matchPlayerForRole(slot.roleName, true);
+      if (!match) return slot;
+      placed++;
+      return { ...slot, name: match.name, position: match.position };
+    });
+    setPlayersOnField(next);
+    if (placed === 0) setSuccessMsg("Ningún jugador de tu plantilla encaja con las posiciones actuales.");
+    else if (placed === 1) setSuccessMsg("1 jugador de tu plantilla fue posicionado en la cancha.");
+    else setSuccessMsg(`${placed} jugadores de tu plantilla fueron posicionados en la cancha.`);
+  };
+
+  // Ask the NVIDIA-backed analyst for a tactical diagnosis of the current formation
+  const handleAnalyzeTactics = async () => {
+    if (playersOnField.length === 0) {
+      setErrorMsg("Añade jugadores al campo antes de analizar la táctica.");
+      return;
+    }
+
+    setAnalyzing(true);
+    setAiFeedback(null);
+    setErrorMsg(null);
+    try {
+      const res = await fetch("/api/chat/tactical-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ formation: formationType, playersOnField, notes }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo analizar la táctica.");
+      setAiFeedback(data.feedback);
+    } catch (err: any) {
+      setErrorMsg(err.message || "El análisis táctico no está disponible ahora.");
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
   // Export board and mock social media post
@@ -397,7 +477,7 @@ export default function TacticsBoard({
               placeholder="Título de la estrategia..."
               className="flex-1 px-3 py-2 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-none text-slate-100 placeholder-slate-600 outline-none text-xs font-bold uppercase tracking-wider transition-all"
             />
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={handleSaveBoard}
                 disabled={loading}
@@ -412,6 +492,22 @@ export default function TacticsBoard({
                 title="Restablecer posiciones"
               >
                 <RefreshCw className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleLoadCustomTemplate}
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/40 text-purple-300 font-bold rounded-none text-xs uppercase tracking-wide transition-all cursor-pointer"
+                title="Cargar mi plantilla personalizada"
+              >
+                <UserCheck className="w-3.5 h-3.5" />
+                <span>Mi Plantilla</span>
+              </button>
+              <button
+                onClick={handleAnalyzeTactics}
+                disabled={analyzing}
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/40 text-sky-300 font-bold rounded-none text-xs uppercase tracking-wide transition-all cursor-pointer disabled:opacity-50"
+              >
+                {analyzing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                <span>{analyzing ? "Analizando..." : "Analizar Táctica con IA"}</span>
               </button>
             </div>
           </div>
@@ -522,6 +618,26 @@ export default function TacticsBoard({
                 );
               })}
             </div>
+
+            {/* Floating AI tactical diagnosis */}
+            {aiFeedback && (
+              <div className="absolute top-12 right-4 z-30 w-[min(340px,calc(100%-2rem))] p-4 bg-slate-950/95 border border-amber-500/40 rounded-none shadow-2xl backdrop-blur animate-slide-up">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+                  <h4 className="text-[12px] font-bold uppercase tracking-wide text-amber-500 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Diagnóstico Táctico
+                  </h4>
+                  <button
+                    onClick={() => setAiFeedback(null)}
+                    className="text-slate-400 hover:text-white cursor-pointer"
+                    title="Cerrar análisis"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-line">{aiFeedback}</p>
+              </div>
+            )}
           </div>
 
           {/* Tactical Notes Input Panel */}

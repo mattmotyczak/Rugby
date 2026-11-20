@@ -18,11 +18,12 @@ const store: RateLimitStore = {};
 export function createRateLimiter(
   windowMs = 10000,
   max = 10,
-  message = "Demasiadas solicitudes. Reduce el ritmo e inténtalo más tarde."
+  message = "Demasiadas solicitudes. Reduce el ritmo e inténtalo más tarde.",
+  namespace = "default"
 ) {
   return (req: Request, res: Response, next: NextFunction) => {
     const ip = req.ip || req.headers["x-forwarded-for"] || "unknown";
-    const ipStr = Array.isArray(ip) ? ip[0] : String(ip);
+    const ipStr = `${namespace}:${Array.isArray(ip) ? ip[0] : String(ip)}`;
     const now = Date.now();
 
     if (!store[ipStr]) {

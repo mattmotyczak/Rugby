@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { RugbyPlayer } from "../types.js";
-import { Plus, User, Award, Shield, Globe, AlertCircle, Sparkles, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Plus, User, Award, Shield, Globe, AlertCircle, Sparkles, RefreshCw, CheckCircle2, X } from "lucide-react";
 
 interface CustomTeamCreatorProps {
   isLoggedIn: boolean;
@@ -21,6 +21,29 @@ const RUGBY_POSITIONS = [
   "Zaguero"
 ];
 
+const COUNTRIES = (() => {
+  const names = new Intl.DisplayNames(["es"], { type: "region" });
+  return Array.from({ length: 26 * 26 }, (_, i) => {
+    const code = String.fromCharCode(65 + Math.floor(i / 26), 65 + (i % 26));
+    return names.of(code) || "";
+  })
+    .filter((name) => name.length > 2)
+    .sort((a, b) => a.localeCompare(b, "es"));
+})();
+
+const POSITION_MARKS: Record<string, { top: number; left: number; label: string }[]> = {
+  "Pilar": [{ top: 14, left: 38, label: "1" }, { top: 14, left: 62, label: "3" }],
+  "Talonador": [{ top: 11, left: 50, label: "2" }],
+  "Segunda línea": [{ top: 27, left: 42, label: "4" }, { top: 27, left: 58, label: "5" }],
+  "Flanker": [{ top: 23, left: 29, label: "6" }, { top: 23, left: 71, label: "7" }],
+  "Número 8": [{ top: 34, left: 50, label: "8" }],
+  "Medio melé": [{ top: 52, left: 50, label: "9" }],
+  "Apertura": [{ top: 61, left: 43, label: "10" }],
+  "Centro": [{ top: 68, left: 38, label: "12" }, { top: 68, left: 62, label: "13" }],
+  "Extremo": [{ top: 80, left: 20, label: "11" }, { top: 80, left: 80, label: "14" }],
+  "Zaguero": [{ top: 90, left: 50, label: "15" }],
+};
+
 export default function CustomTeamCreator({ isLoggedIn, onOpenAuth, token }: CustomTeamCreatorProps) {
   const [customPlayers, setCustomPlayers] = useState<RugbyPlayer[]>([]);
   const [loading, setLoading] = useState(false);
@@ -33,6 +56,33 @@ export default function CustomTeamCreator({ isLoggedIn, onOpenAuth, token }: Cus
   const [rating, setRating] = useState("85");
   const [club, setClub] = useState("");
   const [country, setCountry] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [hoveredPosition, setHoveredPosition] = useState<string | null>(null);
+
+  const countryOptions = Array.from(
+    new Set([...COUNTRIES, ...customPlayers.map((p) => p.country).filter(Boolean)])
+  ).sort((a, b) => a.localeCompare(b, "es"));
+
+  const resetForm = () => {
+    setName("");
+    setPosition("Apertura");
+    setRating("85");
+    setClub("");
+    setCountry("");
+    setEditingId(null);
+  };
+
+  const startEdit = (player: RugbyPlayer) => {
+    setName(player.name);
+    setPosition(player.position);
+    setRating(String(player.rating));
+    setClub(player.club);
+    setCountry(player.country);
+    setEditingId(player.id);
+    setError(null);
+    setSuccess(null);
+    document.getElementById("player-form")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  };
 
   const loadCustomPlayers = async () => {
     if (!isLoggedIn) return;
@@ -83,30 +133,33 @@ export default function CustomTeamCreator({ isLoggedIn, onOpenAuth, token }: Cus
     setSuccess(null);
 
     try {
-      const response = await fetch("/api/tactics/players", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          name: name.trim(),
-          position,
-          rating: numRating,
-          club: club.trim() || "Sin club",
-          country: country.trim() || "Selección"
-        })
-      });
+      const response = await fetch(
+        editingId ? `/api/tactics/players/${editingId}` : "/api/tactics/players",
+        {
+          method: editingId ? "PUT" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            name: name.trim(),
+            position,
+            rating: numRating,
+            club: club.trim() || "Sin club",
+            country: country || "Selección"
+          })
+        }
+      );
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || "No se pudo crear el jugador.");
+        throw new Error(data.error || (editingId ? "No se pudo actualizar el jugador." : "No se pudo crear el jugador."));
       }
 
-      setSuccess(`¡Jugador "${data.player.name}" añadido a la plantilla!`);
-      setName("");
-      setClub("");
-      setCountry("");
+      setSuccess(editingId
+        ? `¡Jugador "${data.player.name}" actualizado!`
+        : `¡Jugador "${data.player.name}" añadido a la plantilla!`);
+      resetForm();
       loadCustomPlayers(); // Reload custom roster
     } catch (err: any) {
       setError(err.message || "Algo salió mal.");
@@ -149,12 +202,26 @@ export default function CustomTeamCreator({ isLoggedIn, onOpenAuth, token }: Cus
           
           {/* Form Side (5 columns) */}
           <form
+            id="player-form"
             onSubmit={handleSubmit}
             className="lg:col-span-5 p-6 bg-[#0F0F0F] border border-slate-800 rounded-none space-y-4 shadow-xl"
           >
             <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
               <Sparkles className="w-5 h-5 text-amber-500" />
-              <h3 className="text-base font-bold text-white uppercase tracking-wider font-serif">Ficha de Alta</h3>
+              <h3 className="text-base font-bold text-white uppercase tracking-wider font-serif">
+                {editingId ? "Editar Ficha" : "Ficha de Alta"}
+              </h3>
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  title="Cancelar edición"
+                  aria-label="Cancelar edición"
+                  className="ml-auto p-1 text-slate-400 hover:text-red-400 border border-slate-800 hover:border-red-500/40 cursor-pointer transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             {success && (
@@ -180,10 +247,11 @@ export default function CustomTeamCreator({ isLoggedIn, onOpenAuth, token }: Cus
                 <input
                   type="text"
                   required
+                  disabled={!!editingId}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="p. ej. Jonah Lomu"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-none text-slate-100 placeholder-slate-600 outline-none transition-all text-xs"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-none text-slate-100 placeholder-slate-600 outline-none transition-all text-xs disabled:opacity-60 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -246,13 +314,16 @@ export default function CustomTeamCreator({ isLoggedIn, onOpenAuth, token }: Cus
                 </label>
                 <div className="relative">
                   <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <input
-                    type="text"
+                  <select
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
-                    placeholder="p. ej. Nueva Zelanda"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-none text-slate-100 placeholder-slate-600 outline-none transition-all text-xs"
-                  />
+                    className="w-full pl-10 pr-4 py-2.5 appearance-none bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-none text-slate-200 outline-none text-xs cursor-pointer"
+                  >
+                    <option value="">Selección</option>
+                    {countryOptions.map((name) => (
+                      <option key={name} value={name}>{name}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
@@ -262,8 +333,60 @@ export default function CustomTeamCreator({ isLoggedIn, onOpenAuth, token }: Cus
               disabled={loading}
               className="w-full py-3 bg-amber-500 hover:bg-white text-slate-950 font-bold rounded-none transition-all text-xs uppercase tracking-wide shadow cursor-pointer disabled:opacity-50"
             >
-              {loading ? "Dando de alta..." : "Dar de Alta Jugador"}
+              {loading
+                ? (editingId ? "Guardando..." : "Dando de alta...")
+                : (editingId ? "Guardar cambios" : "Dar de Alta Jugador")}
             </button>
+
+            <div className="pt-4 border-t border-slate-800 space-y-3">
+              <p className="text-[12px] font-bold uppercase tracking-wide text-slate-400">
+                Mapa de posiciones <span className="text-slate-600 font-normal normal-case tracking-normal">— pasa el cursor para resaltar</span>
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {RUGBY_POSITIONS.map((pos) => (
+                  <button
+                    type="button"
+                    key={pos}
+                    onMouseEnter={() => setHoveredPosition(pos)}
+                    onMouseLeave={() => setHoveredPosition(null)}
+                    onFocus={() => setHoveredPosition(pos)}
+                    onBlur={() => setHoveredPosition(null)}
+                    onClick={() => setPosition(pos)}
+                    className={`px-2 py-1 text-[11px] font-bold uppercase tracking-wide border cursor-pointer transition-colors ${
+                      pos === position
+                        ? "bg-amber-500/15 border-amber-500/50 text-amber-500"
+                        : "bg-slate-950 border-slate-800 text-slate-400 hover:text-amber-500 hover:border-amber-500/40"
+                    }`}
+                  >
+                    {pos}
+                  </button>
+                ))}
+              </div>
+              <div className="relative h-52 w-full max-w-[260px] mx-auto border border-slate-700 bg-[#0B1510] rounded-none overflow-hidden">
+                <div className="absolute inset-x-0 top-1/3 border-t border-dashed border-slate-700/60" />
+                <div className="absolute inset-x-0 top-1/2 border-t border-slate-700" />
+                <div className="absolute inset-x-0 top-2/3 border-t border-dashed border-slate-700/60" />
+                {RUGBY_POSITIONS.flatMap((pos) =>
+                  (POSITION_MARKS[pos] || []).map((mark) => {
+                    const active = hoveredPosition === pos || (!hoveredPosition && position === pos);
+                    return (
+                      <div
+                        key={`${pos}-${mark.label}`}
+                        title={pos}
+                        style={{ top: `${mark.top}%`, left: `${mark.left}%` }}
+                        className={`absolute -translate-x-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full border font-mono text-[11px] font-bold transition-all ${
+                          active
+                            ? "bg-amber-500 border-amber-200 text-slate-950 scale-110 z-10 shadow-lg shadow-amber-500/30"
+                            : "bg-slate-900 border-slate-600 text-slate-400"
+                        }`}
+                      >
+                        {mark.label}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
           </form>
 
           {/* Roster View Side (7 columns) */}
@@ -298,10 +421,23 @@ export default function CustomTeamCreator({ isLoggedIn, onOpenAuth, token }: Cus
                 {customPlayers.map((player) => (
                   <div
                     key={player.id}
-                    className="p-4 bg-[#0F0F0F] border border-slate-800 rounded-none flex items-center justify-between hover:border-amber-500/30 transition-all shadow-sm"
+                    onMouseEnter={() => setHoveredPosition(player.position)}
+                    onMouseLeave={() => setHoveredPosition(null)}
+                    className={`p-4 bg-[#0F0F0F] border rounded-none flex items-center justify-between hover:border-amber-500/30 transition-all shadow-sm ${
+                      editingId === player.id ? "border-amber-500/60" : "border-slate-800"
+                    }`}
                   >
                     <div className="min-w-0 pr-2">
-                      <div className="text-xs font-bold text-white uppercase tracking-wider truncate">{player.name}</div>
+                      <button
+                        type="button"
+                        onClick={() => startEdit(player)}
+                        title="Editar jugador"
+                        className={`block w-full text-left text-xs font-bold uppercase tracking-wider truncate cursor-pointer hover:text-amber-500 transition-colors ${
+                          editingId === player.id ? "text-amber-500" : "text-white"
+                        }`}
+                      >
+                        {player.name}
+                      </button>
                       <div className="text-[12px] font-bold text-amber-500 font-mono mt-0.5 uppercase tracking-wide">{player.position}</div>
                       
                       <div className="flex gap-2 text-[11px] uppercase tracking-wider text-slate-400 mt-2 font-mono truncate">

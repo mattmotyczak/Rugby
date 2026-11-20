@@ -6,6 +6,7 @@ import NewsSector from "./components/NewsSector.js";
 import ForumSector from "./components/ForumSector.js";
 import TacticsBoard from "./components/TacticsBoard.js";
 import CustomTeamCreator from "./components/CustomTeamCreator.js";
+import ChatBot from "./components/ChatBot.js";
 import { 
   Flame, 
   TrendingUp, 
@@ -348,6 +349,9 @@ export default function App() {
         onClose={() => setIsAuthOpen(false)}
         onSuccess={handleAuthSuccess}
       />
+
+      {/* Floating rugby assistant, available on every tab */}
+      <ChatBot />
     </div>
   );
 }

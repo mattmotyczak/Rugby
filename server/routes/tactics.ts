@@ -69,6 +69,47 @@ router.post("/players", requireAuth, (req: Request, res: Response) => {
 });
 
 /**
+ * PUT /api/tactics/players/:id
+ * Update one of the logged-in user's custom players
+ */
+router.put("/players/:id", requireAuth, (req: Request, res: Response) => {
+  const { name, position, rating, club, country } = req.body;
+  const user = (req as any).user;
+
+  if (!name || !position || !rating) {
+    res.status(400).json({ error: "El nombre, la posición y la valoración (1-99) son obligatorios." });
+    return;
+  }
+
+  const numRating = Number(rating);
+  if (isNaN(numRating) || numRating < 1 || numRating > 99) {
+    res.status(400).json({ error: "La valoración debe ser un número entre 1 y 99." });
+    return;
+  }
+
+  const db = getDB();
+  const player = db.players.find(
+    (p) => p.id === req.params.id && p.isCustom && p.userId === user.id
+  );
+  if (!player) {
+    res.status(404).json({ error: "Jugador personalizado no encontrado." });
+    return;
+  }
+
+  player.name = String(name).trim();
+  player.position = String(position).trim();
+  player.rating = numRating;
+  player.club = String(club || "Sin club").trim();
+  player.country = String(country || "Selección").trim();
+  saveDB(db);
+
+  res.json({
+    message: "¡Jugador personalizado actualizado!",
+    player,
+  });
+});
+
+/**
  * GET /api/tactics/boards
  * Fetch saved tactical boards for the logged-in user
  */

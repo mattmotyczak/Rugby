@@ -16,7 +16,10 @@ export default defineConfig(() => {
       // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
       // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
-      watch: process.env.DISABLE_HMR === 'true' ? null : {},
+      // db.json is runtime state rewritten on every API write; watching it made Vite
+      // full-reload the page on every vote/save/login.
+      watch:
+        process.env.DISABLE_HMR === 'true' ? null : { ignored: ['**/db.json'] },
     },
   };
 });

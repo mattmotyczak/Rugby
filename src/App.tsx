@@ -7,18 +7,13 @@ import ForumSector from "./components/ForumSector.js";
 import TacticsBoard from "./components/TacticsBoard.js";
 import CustomTeamCreator from "./components/CustomTeamCreator.js";
 import { 
-  Trophy, 
-  Tv, 
-  Users, 
   Flame, 
-  ShieldCheck, 
   TrendingUp, 
-  MessageSquare, 
-  Activity,
-  Compass,
-  Sparkles,
-  Info
+  MessageSquare
 } from "lucide-react";
+
+const TAB_IDS = ["news", "tactics", "forum", "squad"] as const;
+type TabId = (typeof TAB_IDS)[number];
 
 export default function App() {
   // Global Auth states
@@ -26,8 +21,16 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
-  // Layout states
-  const [activeTab, setActiveTab] = useState<"news" | "tactics" | "forum" | "squad">("news");
+  // Layout states — restored from the URL hash so a page reload keeps the current tab
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
+    const hash = window.location.hash.replace("#", "");
+    return (TAB_IDS as readonly string[]).includes(hash) ? (hash as TabId) : "news";
+  });
+
+  // Keep the URL hash in sync with the active tab
+  useEffect(() => {
+    history.replaceState(null, "", `#${activeTab}`);
+  }, [activeTab]);
   const [preloadedTeams, setPreloadedTeams] = useState<{ teamA: string; teamB: string } | null>(null);
 
   // Data states
@@ -211,34 +214,34 @@ export default function App() {
               
               {/* Hero Left Content */}
               <div className="lg:col-span-7 space-y-6">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-none text-[10px] font-bold tracking-widest uppercase font-mono">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-none text-[12px] font-bold tracking-wide uppercase font-mono">
                   <Flame className="w-3.5 h-3.5 fill-amber-500 animate-pulse" />
-                  <span>Rugby Strategy & Supporters Arena</span>
+                  <span>Estrategia de Rugby y Arena de Aficionados</span>
                 </div>
 
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-black tracking-tighter text-white leading-tight">
-                  Plan standard formations. <br />
+                  Planifica formaciones estándar. <br />
                   <span className="text-amber-500 italic font-normal tracking-wide gold-glow">
-                    Unleash tactical dominance.
+                    Desata tu dominio táctico.
                   </span>
                 </h1>
 
                 <p className="text-slate-400 text-sm md:text-base max-w-xl leading-relaxed">
-                  Join a professional network of global rugby supporters. Construct interactive Sevens or Union playbooks, draft custom rosters, and analyze match strategy.
+                  Únete a una red global de aficionados al rugby. Crea playbooks interactivos de Sevens o Union, arma tus plantillas personalizadas y analiza la estrategia de cada partido.
                 </p>
 
                 <div className="flex flex-wrap items-center gap-4 pt-2">
                   <button
                     onClick={() => setActiveTab("tactics")}
-                    className="px-6 py-3 bg-amber-500 hover:bg-white text-slate-950 font-bold rounded-none text-xs uppercase tracking-widest transition-all cursor-pointer shadow-md"
+                    className="px-6 py-3 bg-amber-500 hover:bg-white text-slate-950 font-bold rounded-none text-xs uppercase tracking-wide transition-all cursor-pointer shadow-md"
                   >
-                    Open Playbook Board
+                    Abrir Tablero de Juegos
                   </button>
                   <button
                     onClick={() => setActiveTab("forum")}
-                    className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 font-bold rounded-none text-xs uppercase tracking-widest transition-colors cursor-pointer"
+                    className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 font-bold rounded-none text-xs uppercase tracking-wide transition-colors cursor-pointer"
                   >
-                    Enter Supporters Forum
+                    Entrar al Foro de Aficionados
                   </button>
                 </div>
               </div>
@@ -246,18 +249,18 @@ export default function App() {
               {/* Hero Right: Trending Discussions Sidebar Widgets */}
               <div className="lg:col-span-5 p-5 md:p-6 bg-[#0E0E0E] border border-slate-800 rounded-none space-y-4 shadow-xl backdrop-blur-sm self-start lg:self-auto">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <h4 className="text-xs font-bold text-amber-500 uppercase tracking-widest flex items-center gap-1.5 font-sans">
+                  <h4 className="text-xs font-bold text-amber-500 uppercase tracking-wide flex items-center gap-1.5 font-sans">
                     <TrendingUp className="w-4 h-4" />
-                    <span>Trending Discussions</span>
+                    <span>Discusiones en Tendencia</span>
                   </h4>
-                  <span className="text-[9px] font-mono text-slate-500 uppercase">Live board</span>
+                  <span className="text-[11px] font-mono text-slate-400 uppercase">En vivo</span>
                 </div>
 
                 <div className="space-y-3">
                   {loadingPosts ? (
-                    <div className="py-6 text-center text-slate-500 text-xs">Connecting thread feeds...</div>
+                    <div className="py-6 text-center text-slate-400 text-xs">Conectando con los hilos...</div>
                   ) : trendingThreads.length === 0 ? (
-                    <div className="py-6 text-center text-slate-500 text-xs">No active discussions. Share analysis!</div>
+                    <div className="py-6 text-center text-slate-400 text-xs">No hay discusiones activas. ¡Comparte tu análisis!</div>
                   ) : (
                     trendingThreads.map((item) => (
                       <div
@@ -270,8 +273,8 @@ export default function App() {
                         <h5 className="text-xs font-semibold text-slate-200 group-hover:text-amber-500 transition-colors line-clamp-1 leading-snug">
                           {item.title}
                         </h5>
-                        <div className="flex items-center justify-between text-[10px] text-slate-500 mt-2 font-mono">
-                          <span>By {item.author}</span>
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2 font-mono">
+                          <span>Por {item.author}</span>
                           <span className="flex items-center gap-2.5">
                             <span className="flex items-center gap-1">
                               <Flame className="w-3 h-3 text-amber-500" /> {item.votes}
@@ -284,12 +287,6 @@ export default function App() {
                       </div>
                     ))
                   )}
-                </div>
-
-                {/* Secure Badge */}
-                <div className="flex items-center gap-2 text-[10px] text-slate-500 bg-slate-950 p-2.5 rounded-none border border-slate-800/60">
-                  <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span>Platform encrypted sessions. Custom rosters kept fully confidential.</span>
                 </div>
               </div>
 
@@ -344,25 +341,6 @@ export default function App() {
         )}
 
       </main>
-
-      {/* Security Info/Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950 text-slate-500 text-xs py-8 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-          <div className="space-y-1">
-            <p className="font-bold text-slate-400 font-sans tracking-tight">OVALTACTICS &bull; RUGBY NEWS & STRATEGY CENTER</p>
-            <p className="text-[11px] leading-relaxed max-w-md">
-              A responsive 2D playbook environment. Password hashing & dynamic rate limiting verified. Session token encryption secure.
-            </p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-4 text-[11px] font-mono">
-            <span>SHA-256 ENCRYPTED</span>
-            <span>&bull;</span>
-            <span>RATE LIMITED</span>
-            <span>&bull;</span>
-            <span>MODULAR PLUGINS COMPLIANT</span>
-          </div>
-        </div>
-      </footer>
 
       {/* Auth Modal Overlay */}
       <AuthModal

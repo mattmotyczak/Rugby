@@ -18,7 +18,7 @@ const store: RateLimitStore = {};
 export function createRateLimiter(
   windowMs = 10000,
   max = 10,
-  message = "Too many requests. Please slow down and try again later."
+  message = "Demasiadas solicitudes. Reduce el ritmo e inténtalo más tarde."
 ) {
   return (req: Request, res: Response, next: NextFunction) => {
     const ip = req.ip || req.headers["x-forwarded-for"] || "unknown";

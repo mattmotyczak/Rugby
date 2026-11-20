@@ -39,12 +39,12 @@ router.post("/posts", requireAuth, (req: Request, res: Response) => {
   const user = (req as any).user;
 
   if (!title || !content || !type || !category) {
-    res.status(400).json({ error: "Title, content, type, and category are required." });
+    res.status(400).json({ error: "El título, el contenido, el tipo y la categoría son obligatorios." });
     return;
   }
 
   if (type !== "general" && type !== "analysis") {
-    res.status(400).json({ error: "Type must be 'general' or 'analysis'." });
+    res.status(400).json({ error: "El tipo debe ser 'general' o 'analysis'." });
     return;
   }
 
@@ -67,7 +67,7 @@ router.post("/posts", requireAuth, (req: Request, res: Response) => {
   saveDB(db);
 
   res.status(201).json({
-    message: "Post created successfully!",
+    message: "¡Publicación creada!",
     post: newPost,
   });
 });
@@ -84,7 +84,7 @@ router.post("/posts/:id/vote", requireAuth, (req: Request, res: Response) => {
   const post = db.posts.find((p) => p.id === id);
 
   if (!post) {
-    res.status(404).json({ error: "Post not found." });
+    res.status(404).json({ error: "Publicación no encontrada." });
     return;
   }
 
@@ -106,7 +106,7 @@ router.post("/posts/:id/vote", requireAuth, (req: Request, res: Response) => {
   saveDB(db);
 
   res.json({
-    message: "Vote updated successfully!",
+    message: "¡Voto actualizado!",
     votes: post.votes,
     voted: voteIndex === -1,
   });
@@ -122,7 +122,7 @@ router.post("/posts/:id/comments", requireAuth, (req: Request, res: Response) =>
   const user = (req as any).user;
 
   if (!content || String(content).trim().length === 0) {
-    res.status(400).json({ error: "Comment content cannot be empty." });
+    res.status(400).json({ error: "El comentario no puede estar vacío." });
     return;
   }
 
@@ -130,7 +130,7 @@ router.post("/posts/:id/comments", requireAuth, (req: Request, res: Response) =>
   const post = db.posts.find((p) => p.id === id);
 
   if (!post) {
-    res.status(404).json({ error: "Post not found." });
+    res.status(404).json({ error: "Publicación no encontrada." });
     return;
   }
 
@@ -145,7 +145,7 @@ router.post("/posts/:id/comments", requireAuth, (req: Request, res: Response) =>
   saveDB(db);
 
   res.status(201).json({
-    message: "Comment added successfully!",
+    message: "¡Comentario añadido!",
     comment: newComment,
   });
 });

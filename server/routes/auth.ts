@@ -7,7 +7,7 @@ import { requireAuth } from "../middleware/auth.js";
 const router = Router();
 
 // Apply tight rate limiting on login/register: max 5 requests per 10 seconds
-const authRateLimiter = createRateLimiter(10000, 5, "Too many authentication attempts. Please try again in 10 seconds.");
+const authRateLimiter = createRateLimiter(10000, 5, "Demasiados intentos de acceso. Inténtalo de nuevo en 10 segundos.");
 
 /**
  * POST /api/auth/register
@@ -17,18 +17,18 @@ router.post("/register", authRateLimiter, (req: Request, res: Response) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-     res.status(400).json({ error: "Username and password are required." });
+     res.status(400).json({ error: "El usuario y la contraseña son obligatorios." });
      return;
   }
 
   const trimmedUsername = String(username).trim();
   if (trimmedUsername.length < 3) {
-     res.status(400).json({ error: "Username must be at least 3 characters." });
+     res.status(400).json({ error: "El usuario debe tener al menos 3 caracteres." });
      return;
   }
 
   if (String(password).length < 6) {
-     res.status(400).json({ error: "Password must be at least 6 characters." });
+     res.status(400).json({ error: "La contraseña debe tener al menos 6 caracteres." });
      return;
   }
 
@@ -38,7 +38,7 @@ router.post("/register", authRateLimiter, (req: Request, res: Response) => {
   );
 
   if (existingUser) {
-     res.status(400).json({ error: "Username is already taken." });
+     res.status(400).json({ error: "Ese usuario ya está en uso." });
      return;
   }
 
@@ -60,7 +60,7 @@ router.post("/register", authRateLimiter, (req: Request, res: Response) => {
   const token = signToken({ id: userId, username: trimmedUsername });
 
   res.status(201).json({
-    message: "Registration successful!",
+    message: "¡Registro completado!",
     token,
     user: {
       id: userId,
@@ -77,7 +77,7 @@ router.post("/login", authRateLimiter, (req: Request, res: Response) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-     res.status(400).json({ error: "Username and password are required." });
+     res.status(400).json({ error: "El usuario y la contraseña son obligatorios." });
      return;
   }
 
@@ -87,20 +87,20 @@ router.post("/login", authRateLimiter, (req: Request, res: Response) => {
   );
 
   if (!user) {
-     res.status(401).json({ error: "Invalid username or password." });
+     res.status(401).json({ error: "Usuario o contraseña incorrectos." });
      return;
   }
 
   const calculatedHash = hashPassword(password, user.salt);
   if (calculatedHash !== user.passwordHash) {
-     res.status(401).json({ error: "Invalid username or password." });
+     res.status(401).json({ error: "Usuario o contraseña incorrectos." });
      return;
   }
 
   const token = signToken({ id: user.id, username: user.username });
 
   res.json({
-    message: "Login successful!",
+    message: "¡Sesión iniciada!",
     token,
     user: {
       id: user.id,

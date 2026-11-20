@@ -35,7 +35,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "An error occurred. Please try again.");
+        throw new Error(data.error || "Ha ocurrido un error. Inténtalo de nuevo.");
       }
 
       onSuccess(data.token, data.user);
@@ -44,7 +44,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
       setUsername("");
       setPassword("");
     } catch (err: any) {
-      setError(err.message || "Something went wrong.");
+      setError(err.message || "Algo salió mal.");
     } finally {
       setLoading(false);
     }
@@ -62,7 +62,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-slate-400 hover:text-amber-400 transition-colors"
-          aria-label="Close Auth Modal"
+          aria-label="Cerrar ventana de acceso"
         >
           <X className="w-5 h-5" />
         </button>
@@ -75,19 +75,19 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           </div>
 
           <h3 className="text-2xl font-bold text-center tracking-tighter font-serif">
-            {isRegister ? "Join the Scrum" : "Welcome Back"}
+            {isRegister ? "Únete al Scrum" : "Bienvenido de nuevo"}
           </h3>
-          <p className="text-slate-455 text-xs text-center mt-1 uppercase tracking-wider">
+          <p className="text-slate-400 text-xs text-center mt-1 uppercase tracking-wider">
             {isRegister 
-              ? "Register an account to publish tactical playbooks and share analysis." 
-              : "Sign in to access custom squads and export tactics."}
+              ? "Crea una cuenta para publicar playbooks tácticos y compartir análisis." 
+              : "Inicia sesión para acceder a tus plantillas y exportar tácticas."}
           </p>
 
           {/* Toggle Tabs */}
-          <div className="flex mt-6 bg-[#0F0F0F] p-1 rounded-none border border-slate-800">
+          <div className="mt-6 bg-[#0F0F0F] p-1 rounded-none border border-slate-800 flex">
             <button
               type="button"
-              className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-none transition-all cursor-pointer ${
+              className={`flex-1 py-2 text-[12px] font-bold uppercase tracking-wide rounded-none transition-all cursor-pointer ${
                 !isRegister 
                   ? "bg-amber-500 text-slate-950 shadow-md" 
                   : "text-slate-400 hover:text-slate-200"
@@ -97,11 +97,11 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                 setError(null);
               }}
             >
-              Sign In
+              Iniciar sesión
             </button>
             <button
               type="button"
-              className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-none transition-all cursor-pointer ${
+              className={`flex-1 py-2 text-[12px] font-bold uppercase tracking-wide rounded-none transition-all cursor-pointer ${
                 isRegister 
                   ? "bg-amber-500 text-slate-950 shadow-md" 
                   : "text-slate-400 hover:text-slate-200"
@@ -111,41 +111,41 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                 setError(null);
               }}
             >
-              Register
+              Registrarse
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             {error && (
               <div className="flex items-start gap-3 p-3 bg-red-500/15 border border-red-500/30 text-red-400 rounded-none text-xs uppercase tracking-wider font-bold">
-                <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
 
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-455 mb-1.5">
-                Username
+              <label className="block text-[12px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">
+                Usuario
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g. ScrumHalf09"
+                  placeholder="p. ej. MedioMelé09"
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-none text-slate-100 placeholder-slate-600 outline-none transition-all text-xs"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-455 mb-1.5">
-                Password
+              <label className="block text-[12px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">
+                Contraseña
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="password"
                   required
@@ -157,30 +157,32 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               </div>
             </div>
 
-            {isRegister && (
-              <div className="p-3.5 bg-slate-950 rounded-none border border-slate-800 space-y-1.5 text-[10px] text-slate-400 font-mono uppercase tracking-wider">
-                <p className="font-semibold text-slate-350">Basic Security Protections:</p>
-                <div className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Passwords hashed using HMAC-SHA256 with salts</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Stateless session token verification</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Rate limited to defend against brute-force attacks</span>
-                </div>
+            <div className="p-3.5 bg-slate-950 rounded-none border border-slate-800 space-y-1.5 text-[12px] text-slate-400 uppercase tracking-wide">
+              <p className="font-semibold text-slate-300">Con tu cuenta puedes:</p>
+              <div className="flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-amber-500" />
+                <span>Guardar y recargar tus esquemas tácticos</span>
               </div>
-            )}
+              <div className="flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-amber-500" />
+                <span>Crear jugadores personalizados en tu plantilla</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-amber-500" />
+                <span>Publicar, votar y comentar en el foro</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-amber-500" />
+                <span>Exportar y compartir tus tableros</span>
+              </div>
+            </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-amber-500 hover:bg-white text-slate-950 font-bold rounded-none transition-all shadow-md text-xs uppercase tracking-widest mt-2 cursor-pointer"
+              className="w-full py-3 bg-amber-500 hover:bg-white text-slate-950 font-bold rounded-none transition-all shadow-md text-xs uppercase tracking-wide mt-2 cursor-pointer"
             >
-              {loading ? "Processing..." : isRegister ? "Create Account" : "Access Platform"}
+              {loading ? "Procesando..." : isRegister ? "Crear cuenta" : "Entrar"}
             </button>
           </form>
         </div>

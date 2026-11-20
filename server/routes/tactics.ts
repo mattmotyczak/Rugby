@@ -37,13 +37,13 @@ router.post("/players", requireAuth, (req: Request, res: Response) => {
   const user = (req as any).user;
 
   if (!name || !position || !rating) {
-    res.status(400).json({ error: "Name, position, and rating (1-99) are required." });
+    res.status(400).json({ error: "El nombre, la posición y la valoración (1-99) son obligatorios." });
     return;
   }
 
   const numRating = Number(rating);
   if (isNaN(numRating) || numRating < 1 || numRating > 99) {
-    res.status(400).json({ error: "Rating must be a number between 1 and 99." });
+    res.status(400).json({ error: "La valoración debe ser un número entre 1 y 99." });
     return;
   }
 
@@ -63,7 +63,7 @@ router.post("/players", requireAuth, (req: Request, res: Response) => {
   saveDB(db);
 
   res.status(201).json({
-    message: "Custom player added successfully!",
+    message: "¡Jugador personalizado añadido!",
     player: newPlayer,
   });
 });
@@ -91,7 +91,7 @@ router.post("/boards", requireAuth, (req: Request, res: Response) => {
   const user = (req as any).user;
 
   if (!name || !formation || !playersOnField || !Array.isArray(playersOnField)) {
-    res.status(400).json({ error: "Name, formation, and players distribution are required." });
+    res.status(400).json({ error: "El nombre, la formación y la distribución de jugadores son obligatorios." });
     return;
   }
 
@@ -103,7 +103,7 @@ router.post("/boards", requireAuth, (req: Request, res: Response) => {
     if (boardIndex !== -1) {
       const existingBoard = db.tactics[boardIndex];
       if (existingBoard.userId !== user.id) {
-         res.status(403).json({ error: "You do not have permission to edit this tactical setup." });
+         res.status(403).json({ error: "No tienes permiso para editar este esquema táctico." });
          return;
       }
 
@@ -116,7 +116,7 @@ router.post("/boards", requireAuth, (req: Request, res: Response) => {
       };
       saveDB(db);
       res.json({
-        message: "Tactical board updated successfully!",
+        message: "¡Tablero táctico actualizado!",
         board: db.tactics[boardIndex],
       });
       return;
@@ -139,7 +139,7 @@ router.post("/boards", requireAuth, (req: Request, res: Response) => {
   saveDB(db);
 
   res.status(201).json({
-    message: "Tactical board saved successfully!",
+    message: "¡Tablero táctico guardado!",
     board: newBoard,
   });
 });
@@ -153,7 +153,7 @@ router.post("/share", requireAuth, (req: Request, res: Response) => {
   const user = (req as any).user;
 
   if (!boardId || !platform) {
-    res.status(400).json({ error: "Board ID and platform (e.g., 'twitter', 'facebook', 'whatsapp') are required." });
+    res.status(400).json({ error: "Se requieren el ID del tablero y la plataforma (p. ej. 'twitter', 'facebook', 'whatsapp')." });
     return;
   }
 
@@ -161,12 +161,12 @@ router.post("/share", requireAuth, (req: Request, res: Response) => {
   const board = db.tactics.find((b) => b.id === boardId);
 
   if (!board) {
-    res.status(404).json({ error: "Tactical board not found." });
+    res.status(404).json({ error: "Tablero táctico no encontrado." });
     return;
   }
 
   if (board.userId !== user.id) {
-    res.status(403).json({ error: "You can only share your own tactical creations." });
+    res.status(403).json({ error: "Solo puedes compartir tus propios tableros." });
     return;
   }
 
@@ -175,7 +175,7 @@ router.post("/share", requireAuth, (req: Request, res: Response) => {
   const shareUrl = `/share/board/${board.id}?ref=${shareId}`;
 
   res.json({
-    message: `Tactical board "${board.name}" successfully exported to ${platform}!`,
+    message: `Tactical board "${board.name}" exportado correctamente a ${platform}!`,
     shareUrl,
     platform,
     user: user.username,

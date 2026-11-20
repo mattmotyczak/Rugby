@@ -14,13 +14,13 @@ export interface AuthenticatedRequest extends Request {
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers["authorization"];
   if (!authHeader) {
-    res.status(401).json({ error: "Missing authentication session. Please sign in." });
+    res.status(401).json({ error: "Falta la sesión de autenticación. Inicia sesión." });
     return;
   }
 
   const parts = authHeader.split(" ");
   if (parts.length !== 2 || parts[0] !== "Bearer") {
-    res.status(401).json({ error: "Invalid session token format. Please sign in again." });
+    res.status(401).json({ error: "Formato de token de sesión inválido. Inicia sesión de nuevo." });
     return;
   }
 
@@ -28,7 +28,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const payload = verifyToken(token);
 
   if (!payload) {
-    res.status(401).json({ error: "Session expired or invalid. Please sign in again." });
+    res.status(401).json({ error: "La sesión ha caducado o no es válida. Inicia sesión de nuevo." });
     return;
   }
 

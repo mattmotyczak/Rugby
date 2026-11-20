@@ -25,32 +25,35 @@ interface TacticsBoardProps {
   preloadedTeams?: { teamA: string; teamB: string } | null;
 }
 
+// `role` is the machine key: it is matched against RugbyPlayer.position and
+// against the forward/back styling keywords, so it must stay in lockstep with
+// RUGBY_POSITIONS in CustomTeamCreator and the seed data in server/utils/db.ts.
 const RUGBY_UNION_ROLES = [
-  { role: "Prop 1", label: "1. Loosehead Prop", defaultX: 30, defaultY: 30 },
-  { role: "Hooker", label: "2. Hooker", defaultX: 50, defaultY: 28 },
-  { role: "Prop 3", label: "3. Tighthead Prop", defaultX: 70, defaultY: 30 },
-  { role: "Lock 4", label: "4. Left Lock", defaultX: 42, defaultY: 20 },
-  { role: "Lock 5", label: "5. Right Lock", defaultX: 58, defaultY: 20 },
-  { role: "Flanker 6", label: "6. Blindside Flanker", defaultX: 28, defaultY: 14 },
-  { role: "Flanker 7", label: "7. Openside Flanker", defaultX: 72, defaultY: 14 },
-  { role: "No. 8", label: "8. Number 8", defaultX: 50, defaultY: 11 },
-  { role: "Scrum-half", label: "9. Scrum-half", defaultX: 42, defaultY: 42 },
-  { role: "Fly-half", label: "10. Fly-half", defaultX: 55, defaultY: 52 },
-  { role: "Winger 11", label: "11. Left Winger", defaultX: 18, defaultY: 62 },
-  { role: "Centre 12", label: "12. Inside Centre", defaultX: 42, defaultY: 62 },
-  { role: "Centre 13", label: "13. Outside Centre", defaultX: 58, defaultY: 68 },
-  { role: "Winger 14", label: "14. Right Winger", defaultX: 82, defaultY: 62 },
-  { role: "Full-back", label: "15. Full-back", defaultX: 50, defaultY: 82 }
+  { role: "Pilar 1", label: "1. Pilar izquierdo", defaultX: 30, defaultY: 30 },
+  { role: "Talonador", label: "2. Talonador", defaultX: 50, defaultY: 28 },
+  { role: "Pilar 3", label: "3. Pilar derecho", defaultX: 70, defaultY: 30 },
+  { role: "Segunda línea 4", label: "4. Segunda línea izquierda", defaultX: 42, defaultY: 20 },
+  { role: "Segunda línea 5", label: "5. Segunda línea derecha", defaultX: 58, defaultY: 20 },
+  { role: "Flanker 6", label: "6. Flanker ciego", defaultX: 28, defaultY: 14 },
+  { role: "Flanker 7", label: "7. Flanker abierto", defaultX: 72, defaultY: 14 },
+  { role: "Número 8", label: "8. Número 8", defaultX: 50, defaultY: 11 },
+  { role: "Medio melé", label: "9. Medio melé", defaultX: 42, defaultY: 42 },
+  { role: "Apertura", label: "10. Apertura", defaultX: 55, defaultY: 52 },
+  { role: "Extremo 11", label: "11. Extremo izquierdo", defaultX: 18, defaultY: 62 },
+  { role: "Centro 12", label: "12. Centro interior", defaultX: 42, defaultY: 62 },
+  { role: "Centro 13", label: "13. Centro exterior", defaultX: 58, defaultY: 68 },
+  { role: "Extremo 14", label: "14. Extremo derecho", defaultX: 82, defaultY: 62 },
+  { role: "Zaguero", label: "15. Zaguero", defaultX: 50, defaultY: 82 }
 ];
 
 const RUGBY_SEVENS_ROLES = [
-  { role: "Prop 1", label: "1. Prop Left", defaultX: 30, defaultY: 25 },
-  { role: "Hooker", label: "2. Hooker", defaultX: 50, defaultY: 22 },
-  { role: "Prop 3", label: "3. Prop Right", defaultX: 70, defaultY: 25 },
-  { role: "Scrum-half", label: "4. Scrum-half", defaultX: 45, defaultY: 45 },
-  { role: "Fly-half", label: "5. Fly-half", defaultX: 55, defaultY: 55 },
-  { role: "Centre", label: "6. Utility Centre", defaultX: 32, defaultY: 68 },
-  { role: "Winger", label: "7. Speed Winger", defaultX: 68, defaultY: 68 }
+  { role: "Pilar 1", label: "1. Pilar izquierdo", defaultX: 30, defaultY: 25 },
+  { role: "Talonador", label: "2. Talonador", defaultX: 50, defaultY: 22 },
+  { role: "Pilar 3", label: "3. Pilar derecho", defaultX: 70, defaultY: 25 },
+  { role: "Medio melé", label: "4. Medio melé", defaultX: 45, defaultY: 45 },
+  { role: "Apertura", label: "5. Apertura", defaultX: 55, defaultY: 55 },
+  { role: "Centro", label: "6. Centro polivalente", defaultX: 32, defaultY: 68 },
+  { role: "Extremo", label: "7. Extremo rápido", defaultX: 68, defaultY: 68 }
 ];
 
 export default function TacticsBoard({
@@ -61,11 +64,11 @@ export default function TacticsBoard({
   preloadedTeams
 }: TacticsBoardProps) {
   const [formationType, setFormationType] = useState<"15-union" | "7-sevens">("15-union");
-  const [boardName, setBoardName] = useState("Championship Defensive Setup");
+  const [boardName, setBoardName] = useState("Esquema Defensivo de Campeonato");
   const [playersOnField, setPlayersOnField] = useState<OnFieldPlayer[]>([]);
   const [playersPool, setPlayersPool] = useState<RugbyPlayer[]>([]);
   const [selectedFieldPlayerId, setSelectedFieldPlayerId] = useState<string | null>(null);
-  const [notes, setNotes] = useState("Focus on drift-defense channels at 10m mark. Ensure Hooker covers blindside sweeps.");
+  const [notes, setNotes] = useState("Ataca los canales de defensa en deriva en la línea de 10m. Que el talonador cubra los barridos por el lado corto.");
   const [savedBoards, setSavedBoards] = useState<TacticBoard[]>([]);
   
   // UI States
@@ -81,8 +84,8 @@ export default function TacticsBoard({
   // Prepopulate or sync preloaded names from upcoming fixtures
   useEffect(() => {
     if (preloadedTeams) {
-      setBoardName(`Match Prep: ${preloadedTeams.teamA} vs ${preloadedTeams.teamB}`);
-      setNotes(`Tactical walkthrough notes for preparing the game layout between ${preloadedTeams.teamA} and ${preloadedTeams.teamB}. Drag and drop players to map scrums or lineouts.`);
+      setBoardName(`Preparación: ${preloadedTeams.teamA} vs ${preloadedTeams.teamB}`);
+      setNotes(`Notas de preparación para el partido entre ${preloadedTeams.teamA} y ${preloadedTeams.teamB}. Arrastra a los jugadores para trazar melés y touches.`);
     }
   }, [preloadedTeams]);
 
@@ -134,7 +137,7 @@ export default function TacticsBoard({
 
       return {
         id: `field-${index}-${Date.now()}`,
-        name: matchedPlayer ? matchedPlayer.name : "Select Player",
+        name: matchedPlayer ? matchedPlayer.name : "Elegir jugador",
         position: matchedPlayer ? matchedPlayer.position : roleInfo.role,
         roleName: roleInfo.role,
         x: roleInfo.defaultX,
@@ -212,7 +215,7 @@ export default function TacticsBoard({
     }
 
     if (!boardName.trim()) {
-      setErrorMsg("Please provide a playbook title.");
+      setErrorMsg("Indica un título para el playbook.");
       return;
     }
 
@@ -237,13 +240,13 @@ export default function TacticsBoard({
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || "Failed to save tactical setup.");
+        throw new Error(data.error || "No se pudo guardar el esquema táctico.");
       }
 
-      setSuccessMsg("Tactical board saved successfully!");
+      setSuccessMsg("¡Tablero táctico guardado!");
       loadData(); // Reload saved list
     } catch (err: any) {
-      setErrorMsg(err.message || "Something went wrong.");
+      setErrorMsg(err.message || "Algo salió mal.");
     } finally {
       setLoading(false);
     }
@@ -255,7 +258,7 @@ export default function TacticsBoard({
     setFormationType(saved.formation as any);
     setPlayersOnField(saved.playersOnField);
     setNotes(saved.notes || "");
-    setSuccessMsg(`Successfully loaded "${saved.name}" setup!`);
+    setSuccessMsg(`¡Esquema "${saved.name}" cargado!`);
     setSelectedFieldPlayerId(null);
   };
 
@@ -289,7 +292,7 @@ export default function TacticsBoard({
 
       const saveData = await saveRes.json();
       if (!saveRes.ok) {
-        throw new Error(saveData.error || "Save required before sharing.");
+        throw new Error(saveData.error || "Debes guardar antes de compartir.");
       }
 
       // Trigger Share API endpoint which checks session auth
@@ -307,14 +310,14 @@ export default function TacticsBoard({
 
       const shareData = await shareRes.json();
       if (!shareRes.ok) {
-        throw new Error(shareData.error || "Sharing permissions expired.");
+        throw new Error(shareData.error || "Caducó el permiso para compartir.");
       }
 
       setExportedData(shareData);
       setExportModalOpen(true);
       loadData();
     } catch (err: any) {
-      setErrorMsg(err.message || "Could not process visual share.");
+      setErrorMsg(err.message || "No se pudo preparar la compartición.");
     } finally {
       setLoading(false);
     }
@@ -326,11 +329,11 @@ export default function TacticsBoard({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-700 pb-5">
         <div>
           <h2 className="text-3xl md:text-4xl font-serif font-black tracking-tighter text-white flex flex-wrap items-center gap-2.5">
-            Rugby Tactics <span className="text-amber-500 italic font-normal">Creator</span>
-            <span className="text-amber-500 font-mono text-[9px] bg-[#151515] border border-amber-500/20 px-2 py-1 rounded-none uppercase tracking-widest">APP SECTOR</span>
+            Creador de <span className="text-amber-500 italic font-normal">Tácticas de Rugby</span>
+            <span className="text-amber-500 font-mono text-[11px] bg-[#151515] border border-amber-500/20 px-2 py-1 rounded-none uppercase tracking-wide">SECTOR APP</span>
           </h2>
-          <p className="text-slate-455 text-xs mt-1 uppercase tracking-wider">
-            Build playbooks, drag tokens, map defensive schemes, and save custom tactical board configurations.
+          <p className="text-slate-400 text-xs mt-1 uppercase tracking-wider">
+            Crea playbooks, arrastra fichas, traza esquemas defensores y guarda la configuración de tus tableros.
           </p>
         </div>
 
@@ -341,7 +344,7 @@ export default function TacticsBoard({
               setFormationType("15-union");
               resetFormation("15-union");
             }}
-            className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-none transition-all cursor-pointer ${
+            className={`px-4 py-1.5 text-[12px] font-bold uppercase tracking-wide rounded-none transition-all cursor-pointer ${
               formationType === "15-union"
                 ? "bg-amber-500 text-slate-950 font-bold"
                 : "text-slate-400 hover:text-slate-200"
@@ -354,7 +357,7 @@ export default function TacticsBoard({
               setFormationType("7-sevens");
               resetFormation("7-sevens");
             }}
-            className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-none transition-all cursor-pointer ${
+            className={`px-4 py-1.5 text-[12px] font-bold uppercase tracking-wide rounded-none transition-all cursor-pointer ${
               formationType === "7-sevens"
                 ? "bg-amber-500 text-slate-950 font-bold"
                 : "text-slate-400 hover:text-slate-200"
@@ -391,22 +394,22 @@ export default function TacticsBoard({
               type="text"
               value={boardName}
               onChange={(e) => setBoardName(e.target.value)}
-              placeholder="Draft Strategy Title..."
+              placeholder="Título de la estrategia..."
               className="flex-1 px-3 py-2 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-none text-slate-100 placeholder-slate-600 outline-none text-xs font-bold uppercase tracking-wider transition-all"
             />
             <div className="flex items-center gap-2">
               <button
                 onClick={handleSaveBoard}
                 disabled={loading}
-                className="flex items-center justify-center gap-1.5 px-5 py-2.5 bg-amber-500 hover:bg-white text-slate-950 font-bold rounded-none text-xs uppercase tracking-widest transition-all cursor-pointer shadow disabled:opacity-50"
+                className="flex items-center justify-center gap-1.5 px-5 py-2.5 bg-amber-500 hover:bg-white text-slate-950 font-bold rounded-none text-xs uppercase tracking-wide transition-all cursor-pointer shadow disabled:opacity-50"
               >
                 <Save className="w-3.5 h-3.5" />
-                <span>Save Setup</span>
+                <span>Guardar Esquema</span>
               </button>
               <button
                 onClick={() => resetFormation(formationType)}
                 className="p-2.5 bg-slate-950 hover:bg-[#151515] border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white rounded-none transition-colors cursor-pointer"
-                title="Reset Coordinates"
+                title="Restablecer posiciones"
               >
                 <RefreshCw className="w-4 h-4" />
               </button>
@@ -415,9 +418,9 @@ export default function TacticsBoard({
 
           {/* Interactive Field Map Wrapper */}
           <div className="relative border border-slate-800 rounded-none overflow-hidden bg-slate-950">
-            <div className="absolute top-3 left-4 z-10 flex items-center gap-1.5 bg-slate-950/90 border border-slate-800/80 px-2.5 py-1 rounded-none text-[9px] font-mono font-bold text-amber-500 uppercase tracking-wider">
+            <div className="absolute top-3 left-4 z-10 flex items-center gap-1.5 bg-slate-950/90 border border-slate-800/80 px-2.5 py-1 rounded-none text-[11px] font-mono font-bold text-amber-500 uppercase tracking-wider">
               <Info className="w-3.5 h-3.5" />
-              <span>Drag Player Badges to Reorganize Setup</span>
+              <span>Arrastra los dorsales para reorganizar el esquema</span>
             </div>
 
             {/* Visual Pitch Outer Stage */}
@@ -472,17 +475,17 @@ export default function TacticsBoard({
               </div>
 
               {/* Chalk Field Labels */}
-              <div className="absolute top-[5.5%] left-6 text-[10px] font-mono font-bold text-white/30 uppercase tracking-wider select-none pointer-events-none">Try Zone</div>
-              <div className="absolute bottom-[5.5%] left-6 text-[10px] font-mono font-bold text-white/30 uppercase tracking-wider select-none pointer-events-none">Try Zone</div>
-              <div className="absolute top-[27%] right-6 text-[10px] font-mono text-white/25 uppercase select-none pointer-events-none">22m Line</div>
-              <div className="absolute bottom-[27%] right-6 text-[10px] font-mono text-white/25 uppercase select-none pointer-events-none">22m Line</div>
-              <div className="absolute top-[48.5%] left-6 text-[10px] font-mono text-white/35 uppercase select-none pointer-events-none">Halfway</div>
+              <div className="absolute top-[5.5%] left-6 text-[12px] font-mono font-bold text-white/30 uppercase tracking-wider select-none pointer-events-none">Zona de Ensayo</div>
+              <div className="absolute bottom-[5.5%] left-6 text-[12px] font-mono font-bold text-white/30 uppercase tracking-wider select-none pointer-events-none">Zona de Ensayo</div>
+              <div className="absolute top-[27%] right-6 text-[12px] font-mono text-white/25 uppercase select-none pointer-events-none">Línea de 22m</div>
+              <div className="absolute bottom-[27%] right-6 text-[12px] font-mono text-white/25 uppercase select-none pointer-events-none">Línea de 22m</div>
+              <div className="absolute top-[48.5%] left-6 text-[12px] font-mono text-white/35 uppercase select-none pointer-events-none">Medio Campo</div>
 
               {/* Draggable Player Tokens */}
               {playersOnField.map((player) => {
                 const isSelected = selectedFieldPlayerId === player.id;
                 const isForward = [
-                  "prop", "hooker", "lock", "flanker", "8"
+                  "pilar", "talonador", "segunda", "flanker", "8"
                 ].some((fwType) => player.roleName.toLowerCase().includes(fwType));
 
                 return (
@@ -511,7 +514,7 @@ export default function TacticsBoard({
                       </div>
 
                       {/* Info Floating Label */}
-                      <div className="absolute top-11 bg-slate-950/90 border border-slate-800 text-[10px] font-semibold text-slate-100 rounded px-2 py-0.5 whitespace-nowrap shadow-md max-w-[85px] truncate text-center">
+                      <div className="absolute top-11 bg-slate-950/90 border border-slate-800 text-[12px] font-semibold text-slate-100 rounded px-2 py-0.5 whitespace-nowrap shadow-md max-w-[85px] truncate text-center">
                         {player.name.split(" ").slice(-1)[0]}
                       </div>
                     </div>
@@ -523,15 +526,15 @@ export default function TacticsBoard({
 
           {/* Tactical Notes Input Panel */}
           <div className="p-4 bg-[#0F0F0F] rounded-none border border-slate-800 space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-450 flex items-center gap-2">
+            <label className="text-[12px] font-bold uppercase tracking-wide text-slate-400 flex items-center gap-2">
               <FileText className="w-4 h-4 text-amber-500" />
-              <span>Coach's Playbook Instructions & Strategy Notes</span>
+              <span>Instrucciones del Entrenador y Notas de Estrategia</span>
             </label>
             <textarea
               rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Detail specific team alignments, kick strategies, lineout codes..."
+              placeholder="Detalla alineaciones, estrategias de golpeo al pie, códigos de touche..."
               className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-none text-slate-100 placeholder-slate-700 outline-none text-xs leading-relaxed"
             />
           </div>
@@ -543,9 +546,9 @@ export default function TacticsBoard({
           
           {/* Section A: Selected Slot Configuration & Selection */}
           <div className="p-4 bg-[#0F0F0F] border border-slate-800 rounded-none space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-amber-500 flex items-center gap-1.5 font-serif border-b border-slate-800 pb-2.5">
+            <h3 className="text-xs font-bold uppercase tracking-wide text-amber-500 flex items-center gap-1.5 font-serif border-b border-slate-800 pb-2.5">
               <UserPlus className="w-4 h-4" />
-              <span>Assign Player to Field Position</span>
+              <span>Asignar Jugador a la Posición</span>
             </h3>
 
             {selectedFieldPlayerId ? (
@@ -555,15 +558,15 @@ export default function TacticsBoard({
 
                 return (
                   <div className="space-y-3 animate-fade-in">
-                    <div className="p-3.5 bg-slate-950 border border-slate-850 rounded-none">
-                      <div className="text-[9px] font-mono text-amber-500 font-bold uppercase mb-0.5">Selected Spot:</div>
+                    <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-none">
+                      <div className="text-[11px] font-mono text-amber-500 font-bold uppercase mb-0.5">Posición seleccionada:</div>
                       <div className="text-xs font-bold text-white uppercase tracking-wider">{activeOnField.roleName}</div>
-                      <div className="text-[11px] text-slate-400 mt-1">Currently filled by: <strong className="text-slate-200">{activeOnField.name}</strong></div>
+                      <div className="text-xs text-slate-400 mt-1">Ocupada actualmente por: <strong className="text-slate-200">{activeOnField.name}</strong></div>
                     </div>
 
                     <div className="space-y-2">
-                      <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-450">
-                        Select a Rugby Player to Fill Role:
+                      <label className="block text-[12px] font-bold uppercase tracking-wide text-slate-400">
+                        Elige un jugador para cubrir la posición:
                       </label>
                       
                       <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-2 border border-slate-950 bg-slate-950/50 p-1.5 rounded-none">
@@ -571,17 +574,17 @@ export default function TacticsBoard({
                           <button
                             key={poolPlayer.id}
                             onClick={() => handleAssignPlayer(poolPlayer)}
-                            className="w-full flex items-center justify-between p-2 hover:bg-[#151515] rounded-none border border-transparent hover:border-slate-850 text-left transition-all group cursor-pointer"
+                            className="w-full flex items-center justify-between p-2 hover:bg-[#151515] rounded-none border border-transparent hover:border-slate-800 text-left transition-all group cursor-pointer"
                           >
                             <div className="min-w-0">
                               <div className="text-xs font-bold text-slate-200 group-hover:text-amber-400 truncate">{poolPlayer.name}</div>
-                              <div className="text-[9px] text-slate-500 font-mono uppercase tracking-wider">{poolPlayer.position} &bull; {poolPlayer.club}</div>
+                              <div className="text-[11px] text-slate-400 font-mono uppercase tracking-wider">{poolPlayer.position} &bull; {poolPlayer.club}</div>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
                               {poolPlayer.isCustom && (
-                                <span className="text-[9px] font-bold px-1.5 py-0.2 bg-purple-500/15 border border-purple-500/30 text-purple-400 rounded-none">CUSTOM</span>
+                                <span className="text-[11px] font-bold px-1.5 py-0.2 bg-purple-500/15 border border-purple-500/30 text-purple-400 rounded-none">PROPIO</span>
                               )}
-                              <span className="text-[10px] font-mono font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded-none border border-amber-500/20">
+                              <span className="text-[12px] font-mono font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded-none border border-amber-500/20">
                                 {poolPlayer.rating}
                               </span>
                             </div>
@@ -593,58 +596,58 @@ export default function TacticsBoard({
                 );
               })()
             ) : (
-              <div className="p-6 text-center bg-slate-950 border border-slate-950 rounded-none text-slate-500 text-xs">
+              <div className="p-6 text-center bg-slate-950 border border-slate-950 rounded-none text-slate-400 text-xs">
                 <Info className="w-5 h-5 text-slate-600 mx-auto mb-1.5" />
-                <span>Click or tap any player circle on the field to assign squad members or update coordinates.</span>
+                <span>Haz clic en cualquier círculo del campo para asignar jugadores o actualizar sus coordenadas.</span>
               </div>
             )}
           </div>
 
           {/* Section B: Social Media Export & Share Option */}
           <div className="p-4 bg-[#0F0F0F] border border-slate-800 rounded-none space-y-3.5">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-amber-500 flex items-center gap-1.5 font-serif border-b border-slate-800 pb-2.5">
+            <h3 className="text-xs font-bold uppercase tracking-wide text-amber-500 flex items-center gap-1.5 font-serif border-b border-slate-800 pb-2.5">
               <Share2 className="w-4 h-4" />
-              <span>Export & Share Tactical Board</span>
+              <span>Exportar y Compartir el Tablero</span>
             </h3>
 
-            <p className="text-xs text-slate-455 leading-relaxed">
-              Export high-fidelity snapshots of your tactical boards to social feeds.
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Exporta capturas de tus tableros tácticos a tus redes sociales.
             </p>
 
             {isLoggedIn ? (
               <div className="grid grid-cols-3 gap-2">
                 <button
                   onClick={() => handleExportShare("twitter")}
-                  className="flex flex-col items-center justify-center p-2.5 bg-slate-950 hover:bg-amber-500/10 border border-slate-850 hover:border-amber-500/30 text-slate-300 hover:text-amber-400 text-xs rounded-none transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center p-2.5 bg-slate-950 hover:bg-amber-500/10 border border-slate-800 hover:border-amber-500/30 text-slate-300 hover:text-amber-400 text-xs rounded-none transition-all cursor-pointer"
                 >
                   <Twitter className="w-4 h-4 mb-1" />
-                  <span className="text-[9px] uppercase tracking-wider font-bold">Twitter</span>
+                  <span className="text-[11px] uppercase tracking-wider font-bold">Twitter</span>
                 </button>
                 <button
                   onClick={() => handleExportShare("facebook")}
-                  className="flex flex-col items-center justify-center p-2.5 bg-slate-950 hover:bg-amber-500/10 border border-slate-850 hover:border-amber-500/30 text-slate-300 hover:text-amber-400 text-xs rounded-none transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center p-2.5 bg-slate-950 hover:bg-amber-500/10 border border-slate-800 hover:border-amber-500/30 text-slate-300 hover:text-amber-400 text-xs rounded-none transition-all cursor-pointer"
                 >
                   <Facebook className="w-4 h-4 mb-1" />
-                  <span className="text-[9px] uppercase tracking-wider font-bold">Facebook</span>
+                  <span className="text-[11px] uppercase tracking-wider font-bold">Facebook</span>
                 </button>
                 <button
                   onClick={() => handleExportShare("whatsapp")}
-                  className="flex flex-col items-center justify-center p-2.5 bg-slate-950 hover:bg-amber-500/10 border border-slate-850 hover:border-amber-500/30 text-slate-300 hover:text-amber-400 text-xs rounded-none transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center p-2.5 bg-slate-950 hover:bg-amber-500/10 border border-slate-800 hover:border-amber-500/30 text-slate-300 hover:text-amber-400 text-xs rounded-none transition-all cursor-pointer"
                 >
                   <Share2 className="w-4 h-4 mb-1" />
-                  <span className="text-[9px] uppercase tracking-wider font-bold">WhatsApp</span>
+                  <span className="text-[11px] uppercase tracking-wider font-bold">WhatsApp</span>
                 </button>
               </div>
             ) : (
               <div className="p-3.5 bg-amber-500/5 border border-amber-500/20 rounded-none text-center space-y-2">
-                <p className="text-[10px] text-amber-200 uppercase tracking-wide leading-relaxed">
-                  🔒 Exporting screenshots is restricted to logged-in users only.
+                <p className="text-[12px] text-amber-200 uppercase tracking-wide leading-relaxed">
+                  🔒 La exportación de capturas está reservada a usuarios registrados.
                 </p>
                 <button
                   onClick={onOpenAuth}
                   className="text-xs font-bold text-amber-500 hover:text-white uppercase tracking-wider underline cursor-pointer"
                 >
-                  Sign In to Export & Share &rarr;
+                  Inicia sesión para exportar y compartir &rarr;
                 </button>
               </div>
             )}
@@ -653,9 +656,9 @@ export default function TacticsBoard({
           {/* Section C: Saved Tactics Feed */}
           {isLoggedIn && savedBoards.length > 0 && (
             <div className="p-4 bg-[#0F0F0F] border border-slate-800 rounded-none space-y-3">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-450 flex items-center gap-1.5 font-serif border-b border-slate-800 pb-2.5">
+              <h3 className="text-[12px] font-bold uppercase tracking-wide text-slate-400 flex items-center gap-1.5 font-serif border-b border-slate-800 pb-2.5">
                 <Sparkles className="w-4 h-4 text-amber-500" />
-                <span>My Saved Tactical Setups</span>
+                <span>Mis Esquemas Guardados</span>
               </h3>
 
               <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
@@ -663,7 +666,7 @@ export default function TacticsBoard({
                   <button
                     key={saved.id}
                     onClick={() => handleLoadSavedBoard(saved)}
-                    className="w-full flex items-center justify-between p-2.5 bg-slate-950 hover:bg-[#151515] border border-slate-850 hover:border-amber-500/20 rounded-none text-left text-xs text-slate-300 hover:text-amber-500 transition-all group cursor-pointer"
+                    className="w-full flex items-center justify-between p-2.5 bg-slate-950 hover:bg-[#151515] border border-slate-800 hover:border-amber-500/20 rounded-none text-left text-xs text-slate-300 hover:text-amber-500 transition-all group cursor-pointer"
                   >
                     <span className="font-semibold uppercase tracking-wider truncate pr-2">{saved.name}</span>
                     <ChevronRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-amber-500" />
@@ -686,31 +689,31 @@ export default function TacticsBoard({
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
                   <UserCheck className="w-5 h-5 text-amber-500" />
-                  <h4 className="text-base font-bold uppercase tracking-widest text-white font-serif">Tactical Board Share Package</h4>
+                  <h4 className="text-base font-bold uppercase tracking-wide text-white font-serif">Paquete de Compartición del Tablero</h4>
                 </div>
                 <button
                   onClick={() => setExportModalOpen(false)}
                   className="text-slate-400 hover:text-white text-xs uppercase tracking-wider font-bold cursor-pointer"
                 >
-                  Close
+                  Cerrar
                 </button>
               </div>
 
               {/* Simulated Card Preview (PNG mockup representation) */}
               <div className="p-5 bg-[#0F0F0F] border border-slate-800 rounded-none space-y-4 shadow-inner relative overflow-hidden">
                 {/* Glowing Rugby Watermark */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/5 font-serif font-black text-[80px] pointer-events-none uppercase tracking-widest leading-none">
-                  OVAL
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/5 font-serif font-black text-[80px] pointer-events-none uppercase tracking-wide leading-none">
+                  ONRUGBY
                 </div>
 
                 <div className="flex justify-between items-start border-b border-slate-800 pb-2.5 z-10 relative">
                   <div>
                     <h5 className="text-base font-bold text-amber-400 uppercase tracking-wider font-sans">{boardName}</h5>
-                    <p className="text-[9px] font-mono text-slate-500">FORMAT: {formationType === "15-union" ? "RUGBY UNION 15s" : "RUGBY SEVENS 7s"}</p>
+                    <p className="text-[11px] font-mono text-slate-400">FORMATO: {formationType === "15-union" ? "RUGBY UNION 15" : "RUGBY SEVENS 7"}</p>
                   </div>
                   <div className="text-right">
-                    <span className="text-[8px] font-mono px-2 py-0.5 bg-[#151515] border border-slate-700 text-slate-400 rounded-none">
-                      PREVIEW_OK
+                    <span className="text-[11px] font-mono px-2 py-0.5 bg-[#151515] border border-slate-700 text-slate-400 rounded-none">
+                      VISTA PREVIA
                     </span>
                   </div>
                 </div>
@@ -718,27 +721,27 @@ export default function TacticsBoard({
                 {/* mini pitch canvas visual */}
                 <div className="grid grid-cols-5 gap-2.5 py-4 border-b border-slate-800 relative z-10">
                   {playersOnField.map((p, idx) => (
-                    <div key={idx} className="flex flex-col items-center bg-slate-950 p-1 rounded-none border border-slate-850">
-                      <span className="text-[9px] font-mono font-bold text-amber-500">{p.roleName}</span>
-                      <span className="text-[10px] text-slate-200 truncate max-w-full font-sans font-medium">{p.name.split(" ").slice(-1)[0]}</span>
+                    <div key={idx} className="flex flex-col items-center bg-slate-950 p-1 rounded-none border border-slate-800">
+                      <span className="text-[11px] font-mono font-bold text-amber-500">{p.roleName}</span>
+                      <span className="text-[12px] text-slate-200 truncate max-w-full font-sans font-medium">{p.name.split(" ").slice(-1)[0]}</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="text-xs text-slate-400 leading-relaxed italic relative z-10 bg-slate-950/80 p-2.5 rounded-none border border-slate-850">
-                  {notes || "No coach playbook instructions provided."}
+                <div className="text-xs text-slate-400 leading-relaxed italic relative z-10 bg-slate-950/80 p-2.5 rounded-none border border-slate-800">
+                  {notes || "Sin instrucciones del entrenador."}
                 </div>
 
-                <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 pt-1 relative z-10">
-                  <span>Created by Coach: @{exportedData.user}</span>
-                  <span>OVALTACTICS APP &bull; {new Date(exportedData.timestamp).toLocaleDateString()}</span>
+                <div className="flex items-center justify-between text-[12px] font-mono text-slate-400 pt-1 relative z-10">
+                  <span>Creado por el entrenador: @{exportedData.user}</span>
+                  <span>ONRUGBY APP &bull; {new Date(exportedData.timestamp).toLocaleDateString("es-ES")}</span>
                 </div>
               </div>
 
               {/* Status report */}
               <div className="p-3.5 bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-none text-xs space-y-1">
-                <p className="font-bold uppercase tracking-wider">Social Share Successful!</p>
-                <p className="text-slate-400">Export verified using cryptographic security token signature: <code className="text-amber-500 bg-slate-950 px-1 py-0.2 rounded-none font-mono break-all">{exportedData.shareUrl}</code></p>
+                <p className="font-bold uppercase tracking-wider">¡Compartición en redes exitosa!</p>
+                <p className="text-slate-400">Exportación verificada con firma de token de seguridad: <code className="text-amber-500 bg-slate-950 px-1 py-0.2 rounded-none font-mono break-all">{exportedData.shareUrl}</code></p>
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
@@ -748,19 +751,19 @@ export default function TacticsBoard({
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement("a");
                     link.href = url;
-                    link.download = `${boardName.toLowerCase().replace(/\s+/g, "_")}_tactic_setup.json`;
+                    link.download = `${boardName.toLowerCase().replace(/\s+/g, "_")}_esquema_tactico.json`;
                     link.click();
                   }}
-                  className="flex items-center gap-1.5 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold uppercase tracking-widest rounded-none transition-all cursor-pointer border border-slate-700"
+                  className="flex items-center gap-1.5 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold uppercase tracking-wide rounded-none transition-all cursor-pointer border border-slate-700"
                 >
                   <Download className="w-4 h-4" />
-                  <span>Download File</span>
+                  <span>Descargar Archivo</span>
                 </button>
                 <button
                   onClick={() => setExportModalOpen(false)}
-                  className="px-5 py-2.5 bg-amber-500 hover:bg-white text-slate-950 font-bold text-xs uppercase tracking-widest rounded-none transition-all cursor-pointer"
+                  className="px-5 py-2.5 bg-amber-500 hover:bg-white text-slate-950 font-bold text-xs uppercase tracking-wide rounded-none transition-all cursor-pointer"
                 >
-                  Done
+                  Listo
                 </button>
               </div>
 

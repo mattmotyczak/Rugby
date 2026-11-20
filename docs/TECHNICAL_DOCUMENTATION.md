@@ -1,12 +1,12 @@
-# Documentación Técnica — OnRugby
+# Documentación Técnica — RugbyUnion
 
-Especificación de arquitectura, diseño de componentes, capas del servidor, autenticación y endpoints de la plataforma **OnRugby**.
+Especificación de arquitectura, diseño de componentes, capas del servidor, autenticación y endpoints de la plataforma **RugbyUnion**.
 
 ---
 
 ## 1. Visión General de la Arquitectura
 
-OnRugby está estructurado bajo una arquitectura de monorepo monolítico ligero con separación clara entre interfaz de usuario y capa de servicios API:
+RugbyUnion está estructurado bajo una arquitectura de monorepo monolítico ligero con separación clara entre interfaz de usuario y capa de servicios API:
 
 - **Frontend:** Single Page Application (SPA) construida con **React 19**, **TypeScript** y **Tailwind CSS v4**, empaquetada con **Vite**.
 - **Backend:** Servidor **Node.js** con **Express 4** en TypeScript, sirviendo tanto las rutas REST `/api/*` como los middlewares de desarrollo de Vite (o estáticos en producción).
@@ -90,7 +90,7 @@ En [`server/utils/crypto.ts`](../server/utils/crypto.ts):
 
 ### 3.2. Mecanismo de Tokens Bearer
 - La sesión se firma generando un token serializado en Base64 con payload (`id`, `username`, `timestamp`) y firma criptográfica HMAC-SHA256 utilizando una clave secreta (`JWT_SECRET` o fallback interno).
-- El cliente almacena el token en `localStorage` bajo la clave `onrugby_token`.
+- El cliente almacena el token en `localStorage` bajo la clave `rugbyunion_token`.
 - En cada solicitud autenticada, el cliente envía la cabecera `Authorization: Bearer <token>`.
 
 ### 3.3. Rate Limiting Dinámico

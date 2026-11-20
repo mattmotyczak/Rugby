@@ -52,7 +52,7 @@ export default function NewsSector({ news, onPrepTactics, isLoading }: NewsSecto
         <div>
           <h2 className="text-3xl md:text-4xl font-serif font-black tracking-tighter text-white flex flex-wrap items-center gap-2.5">
             Noticias de Rugby y <span className="text-amber-500 italic font-normal">Centro de Partidos</span>
-            <span className="text-amber-500 font-mono text-[11px] uppercase tracking-wide bg-[#151515] border border-amber-500/20 px-2 py-1 rounded-none">ONRUGBY</span>
+            <span className="text-amber-500 font-mono text-[11px] uppercase tracking-wide bg-[#151515] border border-amber-500/20 px-2 py-1 rounded-none">RUGBYUNION</span>
           </h2>
           <p className="text-slate-400 text-xs mt-1 uppercase tracking-wider">
             Mantente al día con los partidos oficiales, los resultados y las convocatorias de las grandes selecciones.

@@ -819,7 +819,7 @@ export default function TacticsBoard({
               <div className="p-5 bg-[#0F0F0F] border border-slate-800 rounded-none space-y-4 shadow-inner relative overflow-hidden">
                 {/* Glowing Rugby Watermark */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/5 font-serif font-black text-[80px] pointer-events-none uppercase tracking-wide leading-none">
-                  ONRUGBY
+                  RUGBYUNION
                 </div>
 
                 <div className="flex justify-between items-start border-b border-slate-800 pb-2.5 z-10 relative">
@@ -850,7 +850,7 @@ export default function TacticsBoard({
 
                 <div className="flex items-center justify-between text-[12px] font-mono text-slate-400 pt-1 relative z-10">
                   <span>Creado por el entrenador: @{exportedData.user}</span>
-                  <span>ONRUGBY APP &bull; {new Date(exportedData.timestamp).toLocaleDateString("es-ES")}</span>
+                  <span>RUGBYUNION APP &bull; {new Date(exportedData.timestamp).toLocaleDateString("es-ES")}</span>
                 </div>
               </div>
 

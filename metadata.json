@@ -1,5 +1,5 @@
 {
-  "name": "OnRugby",
+  "name": "RugbyUnion",
   "description": "Foro de noticias de rugby y tablero táctico interactivo con gestión segura de sesiones, base de datos de jugadores y capacidades de compartición.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

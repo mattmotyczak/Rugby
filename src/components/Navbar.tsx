@@ -44,12 +44,10 @@ export default function Navbar({
             onClick={() => setActiveTab("news")}
             className="flex items-center gap-2.5 cursor-pointer group select-none shrink-0"
           >
-            {/* Styled Crest */}
-            <div className="relative w-7 h-7 rounded-sm bg-amber-500 flex items-center justify-center shadow-md">
-              <span className="font-serif font-black text-slate-950 text-sm leading-none">O</span>
-            </div>
+            {/* Rugby ball logo */}
+            <img src="/favicon.svg" alt="" className="w-7 h-7 shrink-0" />
             <span className="text-xl font-serif font-black tracking-tighter text-white group-hover:text-amber-500 transition-colors">
-              ON<span className="text-amber-500 italic font-medium font-serif">RUGBY</span>
+              Rugby<span className="text-amber-500 italic font-medium font-serif">Union</span>
             </span>
           </div>
 

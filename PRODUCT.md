@@ -13,7 +13,7 @@ web
 
 ## Product Purpose
 
-OnRugby is a rugby news forum and interactive tactics board: read generated rugby news, discuss in a supporters forum, and build/save/share 2D tactical formations. Success means a live demo runs end-to-end without failure.
+RugbyUnion is a rugby news forum and interactive tactics board: read generated rugby news, discuss in a supporters forum, and build/save/share 2D tactical formations. Success means a live demo runs end-to-end without failure.
 
 ## Positioning
 
@@ -37,7 +37,7 @@ The interactive tactics board itself is the core mechanism — a draggable 2D pl
 
 ## Brand Commitments
 
-- Existing product name in the code and UI: **OnRugby** ("Foro y Tablero Táctico de Rugby").
+- Existing product name in the code and UI: **RugbyUnion** ("Foro y Tablero Táctico de Rugby").
 - Footer/UI security claims (password hashing, rate limiting, session encryption) must stay truthful to what the server actually does.
 - No visual identity constraint has been declared binding by the user; the incumbent dark slate/amber look is evidence, not a commitment.
 

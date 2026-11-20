@@ -1,6 +1,6 @@
-# Manual de Usuario — OnRugby
+# Manual de Usuario — RugbyUnion
 
-¡Bienvenido a **OnRugby**, la plataforma interactiva diseñada para aficionados, jugadores y analistas de rugby! En este manual aprenderás a utilizar todas las funciones del sistema paso a paso.
+¡Bienvenido a **RugbyUnion**, la plataforma interactiva diseñada para aficionados, jugadores y analistas de rugby! En este manual aprenderás a utilizar todas las funciones del sistema paso a paso.
 
 ---
 
@@ -37,7 +37,7 @@ En esta pantalla encontrarás la actualidad del rugby internacional:
 
 ## 3. Pizarra Táctica Interactiva (Tactics Board)
 
-El tablero táctico es el corazón interactivo de OnRugby. Te permite diagramar jugadas, jugadas preparadas (set pieces) y estrategias tanto para Rugby Union (15 jugadores) como para Rugby Sevens (7 jugadores).
+El tablero táctico es el corazón interactivo de RugbyUnion. Te permite diagramar jugadas, jugadas preparadas (set pieces) y estrategias tanto para Rugby Union (15 jugadores) como para Rugby Sevens (7 jugadores).
 
 ### 3.1. Seleccionar la Modalidad
 En la barra superior de controles tácticos puedes alternar entre:
@@ -105,7 +105,7 @@ Un espacio abierto para el análisis y la discusión del rugby global.
 
 ## 6. Asistente IA de Rugby en Vivo (ChatBot)
 
-En la esquina inferior derecha dispones del **Asistente Oficial de OnRugby**, impulsado por los modelos de IA de NVIDIA NIM:
+En la esquina inferior derecha dispones del **Asistente Oficial de RugbyUnion**, impulsado por los modelos de IA de NVIDIA NIM:
 
 - **¿Qué puedes consultarle?**
   - **Reglas y Tácticas:** Explicaciones claras sobre leyes del juego (*¿Cuándo aplica un 50:22?*, *¿Cómo defender el maul?*, o *¿Cómo funciona un banco 7-1 vs 5-3?*).

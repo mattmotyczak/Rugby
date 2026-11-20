@@ -1,12 +1,12 @@
-# Documentación de la Base de Datos — OnRugby
+# Documentación de la Base de Datos — RugbyUnion
 
-Este documento detalla la arquitectura, el modelo de datos, la persistencia y las operaciones del sistema de almacenamiento de **OnRugby**.
+Este documento detalla la arquitectura, el modelo de datos, la persistencia y las operaciones del sistema de almacenamiento de **RugbyUnion**.
 
 ---
 
 ## 1. Arquitectura y Mecanismo de Persistencia
 
-El almacenamiento de OnRugby está implementado como una base de datos documental embebida basada en un archivo plano JSON (`db.json`) gestionado por el módulo [`server/utils/db.ts`](../server/utils/db.ts).
+El almacenamiento de RugbyUnion está implementado como una base de datos documental embebida basada en un archivo plano JSON (`db.json`) gestionado por el módulo [`server/utils/db.ts`](../server/utils/db.ts).
 
 ### Características Principales:
 - **Almacenamiento Local en Archivo:** Los datos residen en `db.json` en la raíz del proyecto.
